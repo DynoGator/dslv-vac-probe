@@ -38,7 +38,8 @@ export type LogKind =
   | "chromatic"
   | "switch"
   | "freeze"
-  | "amendment";
+  | "amendment"
+  | "export";
 
 export type LogEntry = {
   id: string;
@@ -61,7 +62,7 @@ export type Campaign = {
   nodes: NodeRec[];
   budget: BudgetRow[];
   logs: LogEntry[];
-  frozen: null | { at: string; sha256: string };
+  frozen: null | { at: string; sha256: string; anchorKind: string; anchorId: string };
   amendments: { at: string; reason: string; previousSha: string }[];
 };
 
@@ -81,6 +82,7 @@ type BookState = {
   updateBudget: (id: string, rowId: string, patch: Partial<BudgetRow>) => boolean;
   addLog: (id: string, entry: Omit<LogEntry, "id" | "at"> & { at?: string }) => void;
   freeze: (id: string) => Promise<string | null>;
+  setAnchor: (id: string, anchorKind: string, anchorId: string) => boolean;
   amend: (id: string, reason: string) => void;
   importBook: (raw: unknown) => { ok: true; n: number } | { ok: false; error: string };
 };
@@ -182,7 +184,7 @@ const LOCKED_WHEN_FROZEN = new Set(PREREG.map((f) => f.id));
 
 export function canonical(c: Campaign): string {
   const payload = {
-    rev: "3.4",
+    rev: "3.5",
     app: "DSLV-ZPDI-Probing-The-Vacuum-Structure",
     name: c.name,
     operator: c.operator,
@@ -265,7 +267,15 @@ function normalize(c: Campaign): Campaign {
     acked: Array.isArray(c.acked) ? c.acked.filter((a) => typeof a === "string") : [],
     fields,
     amendments: Array.isArray(c.amendments) ? c.amendments : [],
-    frozen: c.frozen && typeof c.frozen.sha256 === "string" ? c.frozen : null,
+    frozen:
+      c.frozen && typeof c.frozen.sha256 === "string"
+        ? {
+            at: c.frozen.at ?? "",
+            sha256: c.frozen.sha256,
+            anchorKind: c.frozen.anchorKind ?? "",
+            anchorId: c.frozen.anchorId ?? "",
+          }
+        : null,
   };
 }
 
@@ -285,6 +295,21 @@ export function nodesReady(c: Campaign): boolean {
     c.nodes.length >= 2 &&
     c.nodes.every((n) => n.name.trim() && n.gpsdo.trim() && n.sigmaY.trim() && n.fLoopHz.trim())
   );
+}
+
+export function detectionReady(c: Campaign): boolean {
+  return nodesReady(c) && c.nodes.length >= 4;
+}
+
+export function registryAnchored(c: Campaign): boolean {
+  return Boolean(c.frozen?.sha256 && c.frozen.anchorId.trim());
+}
+
+export function registryExported(c: Campaign): boolean {
+  if (!c.frozen?.sha256 || !c.frozen.anchorId.trim()) return false;
+  const sha = c.frozen.sha256;
+  const anchor = c.frozen.anchorId.trim();
+  return c.logs.some((l) => l.kind === "export" && l.body.includes(sha) && l.body.includes(anchor));
 }
 
 export const useBook = create<BookState>((set, get) => ({
@@ -361,7 +386,7 @@ export const useBook = create<BookState>((set, get) => ({
     const at = stamp();
     get().patch(id, (cur) => ({
       ...cur,
-      frozen: { at, sha256: digest },
+      frozen: { at, sha256: digest, anchorKind: "", anchorId: "" },
       logs: [
         {
           id: uid(),
@@ -375,6 +400,28 @@ export const useBook = create<BookState>((set, get) => ({
       ],
     }));
     return digest;
+  },
+  setAnchor: (id, anchorKind, anchorId) => {
+    const c = get().campaigns.find((x) => x.id === id);
+    const trimmed = anchorId.trim();
+    if (!c?.frozen || !trimmed) return false;
+    const at = stamp();
+    get().patch(id, (cur) => ({
+      ...cur,
+      frozen: cur.frozen ? { ...cur.frozen, anchorKind, anchorId: trimmed } : cur.frozen,
+      logs: [
+        {
+          id: uid(),
+          at,
+          kind: "freeze",
+          title: "External anchor recorded",
+          body: `${anchorKind || "unspecified"} ${trimmed}. Digest ${cur.frozen?.sha256 ?? ""}. The anchor ID is stored beside the digest, not inside it, so an external timestamp of that digest still matches.`,
+          chain: "",
+        },
+        ...cur.logs,
+      ],
+    }));
+    return true;
   },
   amend: (id, reason) => {
     const c = get().campaigns.find((x) => x.id === id);

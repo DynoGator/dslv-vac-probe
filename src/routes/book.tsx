@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Field, NeedCampaign, Shell, Tag } from "@/components/chrome";
 import { useActive, useBook } from "@/lib/book";
-import { campaignMarkdown, download } from "@/lib/metrology/report";
+import { APP_ID, APP_REV, campaignFilename, campaignMarkdown, download } from "@/lib/metrology/report";
 
 export const Route = createFileRoute("/book")({ component: BookPage });
 
@@ -40,7 +40,7 @@ function BookBody() {
           type="button"
           className="btn btn-ghost"
           onClick={() => {
-            const payload = { app: "DSLV-ZPDI-Probing-The-Vacuum-Structure", rev: "3.4", campaigns };
+            const payload = { app: APP_ID, rev: APP_REV, campaigns };
             download(
               `dslv-zpdi-vacuum-book.json`,
               JSON.stringify(payload, null, 2),
@@ -85,21 +85,40 @@ function BookBody() {
                   {c.operator || "Operator unset"} · {c.site || "Site unset"} · opened {c.createdAt}
                 </p>
               </div>
-              <Tag tone={c.frozen ? "ok" : "warn"}>{c.frozen ? "Frozen" : "Open"}</Tag>
+              <Tag tone={c.frozen?.anchorId.trim() ? "ok" : c.frozen ? "warn" : "steel"}>
+                {c.frozen?.anchorId.trim() ? "Anchored" : c.frozen ? "Draft freeze" : "Open"}
+              </Tag>
             </div>
-            {c.frozen ? <p className="break-all font-mono text-xs text-primary">{c.frozen.sha256}</p> : null}
+            {c.frozen ? (
+              <p className="break-all font-mono text-xs text-primary">
+                {c.frozen.sha256}
+                {c.frozen.anchorId.trim() ? ` · ${c.frozen.anchorKind} ${c.frozen.anchorId}` : " · no external anchor"}
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => download(`${slug(c.name)}.json`, JSON.stringify(c, null, 2), "application/json")}
+                onClick={() => {
+                  addLog(c.id, {
+                    kind: "export",
+                    title: "Milestone export · campaign-close",
+                    body: `campaign-close. SHA-256 ${c.frozen?.sha256 ?? "unfrozen"}. Anchor ${c.frozen?.anchorId.trim() || "∅"}.`,
+                  });
+                  const next = useBook.getState().campaigns.find((x) => x.id === c.id) ?? c;
+                  download(
+                    `${campaignFilename(next.name)}.json`,
+                    JSON.stringify({ app: APP_ID, rev: APP_REV, campaign: next }, null, 2),
+                    "application/json",
+                  );
+                }}
               >
-                Export this campaign
+                Campaign-close export
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => download(`${slug(c.name)}.md`, campaignMarkdown(c), "text/markdown")}
+                onClick={() => download(`${campaignFilename(c.name)}.md`, campaignMarkdown(c), "text/markdown")}
               >
                 Markdown
               </button>
@@ -168,9 +187,4 @@ function BookBody() {
       )}
     </div>
   );
-}
-
-function slug(name: string): string {
-  const s = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return s || "campaign";
 }

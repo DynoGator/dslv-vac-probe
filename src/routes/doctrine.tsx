@@ -15,7 +15,7 @@ function DoctrinePage() {
           <p className="kicker">§7 · firewall</p>
           <h1 className="text-2xl font-semibold">Kill switches</h1>
           <p className="mt-1 text-sm text-muted">
-            Instrument switches only. Nothing in the appendices is required to run the array, and a
+            Instrument switches only. Supplements S1 and S2 are not part of the peer-review submission, and a
             story about the vacuum is not a bound.
           </p>
         </header>
@@ -50,10 +50,10 @@ function DoctrinePage() {
           <ul className="space-y-2 text-sm text-muted">
             <li>
               <span className="text-foreground">[E]</span> Established result. GPS, IGS, the Beta law,
-              the Holometer’s optical null, the ionospheric 1/f² delay.
+              the Holometer’s optical null. Carrier phase scales as 1/f. Delay and range scale as 1/f².
             </li>
             <li>
-              <span className="text-foreground">[I]</span> Interpretive. Not required by the data. Appendix A.
+              <span className="text-foreground">[I]</span> Interpretive. Not required by the data. Supplement S1.
             </li>
             <li>
               <span className="text-foreground">[H]</span> This program’s hypothesis. Contingent. Kill-switched.
@@ -66,16 +66,17 @@ function DoctrinePage() {
           <Plate
             src={ART.companion}
             alt="Companion studies kept behind a closed laboratory door, the RF rack in front."
-            caption="Appendix B. Gated separately. Aqueous, somatic, and Schumann work does not open or close Chain C."
+            caption="Supplement S2. Gated separately. Aqueous, somatic, and Schumann work does not open or close Chain C."
           />
           <article className="card p-4">
             <h2 className="font-semibold">What this handset will not do</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
               <li>Invent a residual, a γ̂, or a lag.</li>
               <li>Treat a GPS fix as carrier phase.</li>
-              <li>Quote a Chain C bound tighter than the common-clock floor you typed.</li>
+              <li>Quote a Chain C bound tighter than the maximum of the co-located non-clock floor, the isolated relative-clock term, and the baseline atmospheric differential.</li>
               <li>Call a τ≈0 excess superluminal. Common-mode is not a channel.</li>
-              <li>Let Appendix A’s ontology into the detection statistic.</li>
+              <li>Let Supplement S1’s ontology into the detection statistic.</li>
+              <li>Treat a handset hash as a pre-registration without an external anchor.</li>
             </ul>
           </article>
         </section>
@@ -89,9 +90,21 @@ function DoctrinePage() {
             after geodetic subtraction. A bound here is a different channel.
           </p>
           <p className="mt-2">
-            Sibling stack: the node software and the existing handset shell live in DynoGator/dslv-zpdi,
-            package labs.dynogator.dslvzpdi. This record is the Rev 3.4 campaign book beside that
+            Sibling stack: the node software and the existing handset shell live in{" "}
+            <a className="text-primary underline" href="https://github.com/DynoGator/dslv-zpdi">
+              DynoGator/dslv-zpdi
+            </a>
+            , package labs.dynogator.dslvzpdi. This record is the Rev 3.5 campaign book beside that
             array, not a second simulator.
+          </p>
+          <p className="mt-2">
+            <a className="text-primary underline" href="/rev-3.5-white-paper.pdf">
+              Rev 3.5 white paper
+            </a>
+            {" · "}
+            <a className="text-primary underline" href="/rev-3.5-user-guide.pdf">
+              Rev 3.5 install and user guide
+            </a>
           </p>
         </section>
       </div>

@@ -3,13 +3,17 @@ import { useState } from "react";
 import { Field, NeedCampaign, Plate, Readout, Shell, Tag } from "@/components/chrome";
 import {
   clockReady,
+  detectionReady,
   nodesReady,
   preregComplete,
+  registryAnchored,
+  registryExported,
   useActive,
   useBook,
+  type Campaign,
   type NodeRec,
 } from "@/lib/book";
-import { pairsOf } from "@/lib/metrology/report";
+import { APP_ID, APP_REV, campaignFilename, campaignMarkdown, chainCQuote, download, pairsOf } from "@/lib/metrology/report";
 import { formatBaseline, formatRad, formatSeconds, sci } from "@/lib/metrology/format";
 import {
   F_L1_HZ,
@@ -38,15 +42,22 @@ function gate(stepId: string, c: NonNullable<ReturnType<typeof useActive>>): str
   if (stepId === "hypotheses" || stepId === "path" || stepId === "resolution") {
     return c.acked.includes(stepId) ? null : "Acknowledge the step before leaving it.";
   }
-  if (stepId === "nodes") return nodesReady(c) ? null : "Two nodes, each with a name, GPSDO identity, σ_y, and f_loop.";
-  if (stepId === "prereg") return preregComplete(c) ? null : "The registry fields above the clock floor are still blank.";
+  if (stepId === "nodes") {
+    return nodesReady(c) ? null : "Two identified nodes for Phase 0. Each needs a name, GPSDO, σ_y, and f_loop. Four nodes are required before a detection claim.";
+  }
+  if (stepId === "prereg") return preregComplete(c) ? null : "The registry fields above the clock floor and bias hash are still blank.";
   if (stepId === "clock") return clockReady(c) ? null : "Enter the measured non-clock floor and the bias-file hash.";
   if (stepId === "inject") {
-    return c.logs.some((l) => l.kind === "injection") ? null : "Log an injection — recovered, failed, or still sealed.";
+    return c.logs.some((l) => l.kind === "injection") ? null : "Log an injection — recovered, missed, or still sealed.";
   }
-  if (stepId === "freeze") return c.frozen ? null : "Freeze the registry before science entries.";
+  if (stepId === "freeze") {
+    if (!c.frozen) return "Hash the registry. A missing digest is not a pre-registration.";
+    if (!registryAnchored(c)) return "Record the external anchor ID beside the digest. A handset stamp alone is a draft.";
+    if (!registryExported(c)) return "Export the campaign JSON after the anchor ID is recorded.";
+    return null;
+  }
   if (stepId === "analysis-a" || stepId === "analysis-b" || stepId === "chromatic" || stepId === "switches") {
-    if (!c.frozen) return "Freeze first. Science entries wait on the hash.";
+    if (!registryAnchored(c)) return "Science waits on a frozen registry and an external anchor. Without the anchor this is a draft.";
     return c.acked.includes(stepId) ? null : "Acknowledge the step. An empty log is allowed. A silent skip is not.";
   }
   return null;
@@ -67,7 +78,9 @@ function WalkBody() {
         <p className="kicker">
           Step {index + 1} / {STEPS.length} · {step.section}
         </p>
-        <Tag tone={c.frozen ? "ok" : "steel"}>{c.frozen ? "Registry frozen" : "Registry open"}</Tag>
+        <Tag tone={registryAnchored(c) ? "ok" : c.frozen ? "warn" : "steel"}>
+          {registryAnchored(c) ? "Anchored" : c.frozen ? "Draft freeze" : "Registry open"}
+        </Tag>
       </div>
       <div className="flex gap-1">
         {STEPS.map((s, i) => (
@@ -139,7 +152,7 @@ function StepPanel() {
     case "freeze":
       return <FreezeStep />;
     case "release":
-      return <ReleaseHint />;
+      return <ReleaseStep />;
     default:
       return null;
   }
@@ -255,6 +268,11 @@ function Nodes() {
         );
       })}
       {err ? <p className="text-sm text-hot">{err}</p> : null}
+      {c.nodes.length > 0 && c.nodes.length < 4 ? (
+        <p className="text-sm text-warn">
+          {c.nodes.length} node{c.nodes.length === 1 ? "" : "s"}. Phase 0 can validate one pair. Detection-grade Analysis A needs four nodes and two disjoint pairs.
+        </p>
+      ) : null}
       <button type="button" className="btn btn-primary w-full" disabled={!!c.frozen} onClick={() => addNode(c.id)}>
         Add a node
       </button>
@@ -269,7 +287,7 @@ function Prereg() {
   return (
     <div className="space-y-3">
       {PREREG.filter((f) => f.id !== "clockFloorRad" && f.id !== "biasHash").map((f) => {
-        const long = ["allanNote", "transfer", "openPlan", "holdout", "slideCount", "gkm", "fdr"].includes(f.id);
+        const long = ["allanNote", "transfer", "openPlan", "holdout", "slideCount", "gkm", "fdr", "namedInputs", "wipeoff", "phase0", "calibTransfer", "blindCount"].includes(f.id);
         return (
           <Field key={f.id} label={f.label} hint={f.hint}>
             {long ? (
@@ -303,6 +321,18 @@ function Prereg() {
   );
 }
 
+function exportMilestone(c: Campaign, milestone: string) {
+  const digest = c.frozen?.sha256 ?? "unfrozen";
+  const anchor = c.frozen?.anchorId.trim() ?? "";
+  useBook.getState().addLog(c.id, {
+    kind: "export",
+    title: `Milestone export · ${milestone}`,
+    body: `${milestone}. SHA-256 ${digest}. Anchor ${anchor || "∅"}.`,
+  });
+  const next = useBook.getState().campaigns.find((x) => x.id === c.id) ?? c;
+  download(`${campaignFilename(next.name)}.json`, JSON.stringify({ app: APP_ID, rev: APP_REV, campaign: next }, null, 2), "application/json");
+}
+
 function ClockStep() {
   const c = useActive()!;
   const setField = useBook((s) => s.setField);
@@ -310,12 +340,13 @@ function ClockStep() {
   const common = num(c.fields.clockFloorRad);
   const indep = num(c.fields.indepClockRms ?? "");
   const iso = common != null && indep != null ? clockIsolation(common, indep) : null;
+  const quote = chainCQuote(c);
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState("");
 
   return (
     <div className="space-y-3">
-      <Field label="Common-clock residual RMS (rad)" hint="The non-clock floor. This number sets the Chain C bound.">
+      <Field label="Common-clock residual RMS (rad)" hint="Co-located non-clock floor for this hardware and site. One term of the Chain C maximum.">
         <input
           className="field font-mono"
           disabled={!!c.frozen}
@@ -324,7 +355,7 @@ function ClockStep() {
           placeholder="measured"
         />
       </Field>
-      <Field label="Independent-clock co-located RMS (rad)" hint="Site-common plus relative clock. Not a second hypothesis.">
+      <Field label="Independent-clock co-located RMS (rad)" hint="Site-common plus relative clock. Blank stays blank. A noisier common-clock run is Switch 3.">
         <input
           className="field font-mono"
           disabled={!!c.frozen}
@@ -343,11 +374,21 @@ function ClockStep() {
       <div className="grid gap-3 sm:grid-cols-2">
         <Readout
           label="Isolated clock term"
-          value={iso == null ? "—" : formatRad(iso)}
-          hint="√(σ²_indep − σ²_common). Blank if the common-clock run is noisier — that fails the decomposition and routes to Switch 3."
+          value={common != null && indep != null && iso == null ? "failed" : formatRad(iso)}
+          hint="√(σ²_indep − σ²_common). Failed means the common-clock run is noisier. Do not quote a Chain C bound."
         />
-        <Readout label="Chain C bound" value={common == null ? "unbounded" : formatRad(common)} hint="No tighter number is allowed." />
+        <Readout
+          label="Chain C maximum"
+          value={quote.failed ? "not quotable" : quote.boundHi == null ? "unbounded" : `${formatRad(quote.boundLo)} – ${formatRad(quote.boundHi)}`}
+          hint="Max of the co-located floor, the isolated clock, and the troposphere-plus-multipath single difference. Catalog atmosphere stays labeled until replaced. Never quote tighter."
+        />
       </div>
+      {indep == null ? (
+        <p className="text-sm text-warn">Independent-clock RMS is blank. The maximum omits the isolated clock term until you enter it.</p>
+      ) : null}
+      <p className="text-sm text-muted">
+        The run measures front-end and splitter phase, inter-channel bias, thermal drift in the calibration environment, and co-located multipath. It does not reproduce far-site troposphere, far-site multipath, or independent GPSDO drift. Add repeat-run drift in quadrature. A spot check outside the frozen tolerance is Switch 3.
+      </p>
       <Field label="What the run actually did">
         <textarea className="field textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Predicted-null pass or fail, in your words." />
       </Field>
@@ -362,14 +403,15 @@ function ClockStep() {
           addLog(c.id, {
             kind: "calibration",
             chain: "C",
-            title: iso == null ? "Common-clock run — decomposition failed" : "Common-clock calibration",
-            body: `${note || "No narrative."} Floor ${common} rad. Independent ${indep ?? "∅"}. Isolation ${iso ?? "failed"}. Bias ${c.fields.biasHash || "∅"}.`,
+            title: iso == null && indep != null ? "Common-clock run — decomposition failed" : "Common-clock calibration",
+            body: `${note || "No narrative."} Floor ${common} rad. Independent ${indep ?? "∅"}. Isolation ${iso ?? "failed"}. Bias ${c.fields.biasHash || "∅"}. Chain C maximum ${quote.failed ? "not quotable" : quote.boundHi == null ? "unbounded" : quote.boundHi + " rad"}.`,
           });
           setNote("");
-          setMsg("Calibration appended to the book.");
+          exportMilestone(c, "calibration-append");
+          setMsg("Calibration appended. Campaign JSON download started. Move it off the handset.");
         }}
       >
-        Append the calibration
+        Append the calibration and export JSON
       </button>
       {msg ? <p className="text-sm text-muted">{msg}</p> : null}
     </div>
@@ -479,7 +521,10 @@ function FreezeStep() {
   const c = useActive()!;
   const freeze = useBook((s) => s.freeze);
   const amend = useBook((s) => s.amend);
+  const setAnchor = useBook((s) => s.setAnchor);
   const [reason, setReason] = useState("");
+  const [kind, setKind] = useState("osf");
+  const [anchorId, setAnchorId] = useState("");
   const [msg, setMsg] = useState("");
   const ready = preregComplete(c) && nodesReady(c) && clockReady(c);
   return (
@@ -488,11 +533,57 @@ function FreezeStep() {
         <Li ok={nodesReady(c)} text="Two identified nodes" />
         <Li ok={preregComplete(c)} text="Pre-registration fields filled" />
         <Li ok={clockReady(c)} text="Common-clock floor and bias hash" />
+        <Li ok={!!c.frozen} text="SHA-256 of the canonical registry" />
+        <Li ok={registryAnchored(c)} text="External anchor ID, stored beside the digest" />
+        <Li ok={registryExported(c)} text="JSON exported after that anchor" />
       </ul>
       {c.frozen ? (
         <>
           <p className="break-all font-mono text-xs text-primary">{c.frozen.sha256}</p>
-          <p className="text-xs text-muted">Frozen {c.frozen.at}</p>
+          <p className="text-xs text-muted">Handset stamp {c.frozen.at}. Self-attested until an external anchor exists.</p>
+          {c.frozen.anchorId ? (
+            <p className="text-sm">
+              Anchor {c.frozen.anchorKind || "unspecified"}: <span className="break-all font-mono">{c.frozen.anchorId}</span>
+            </p>
+          ) : (
+            <p className="text-sm text-warn">No external anchor. This freeze is a draft, not a pre-registration.</p>
+          )}
+          <Field label="Anchor kind">
+            <select className="select" value={kind} onChange={(e) => setKind(e.target.value)}>
+              <option value="osf">OSF preregistration</option>
+              <option value="git">Signed git tag in DynoGator/dslv-zpdi</option>
+              <option value="ots">OpenTimestamps</option>
+              <option value="rfc3161">RFC-3161 timestamp</option>
+            </select>
+          </Field>
+          <Field label="Anchor transaction ID" hint="Paste the OSF, git, or timestamp ID. Do not invent one. It is not hashed into the digest.">
+            <input className="field font-mono" value={anchorId} onChange={(e) => setAnchorId(e.target.value)} placeholder="transaction id" />
+          </Field>
+          <button
+            type="button"
+            className="btn btn-primary w-full"
+            disabled={!anchorId.trim()}
+            onClick={() => {
+              const ok = setAnchor(c.id, kind, anchorId);
+              setMsg(ok ? "Anchor recorded beside the digest. Export the JSON before science entries." : "Anchor refused.");
+              if (ok) setAnchorId("");
+            }}
+          >
+            Record the anchor ID
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost w-full"
+            disabled={!registryAnchored(c)}
+            onClick={() => {
+              const current = useBook.getState().campaigns.find((x) => x.id === c.id);
+              if (!current) return;
+              exportMilestone(current, "registry-freeze");
+              setMsg("Campaign JSON download started. Move it off the handset.");
+            }}
+          >
+            Export JSON
+          </button>
           <Field label="Amendment reason">
             <textarea className="field textarea" value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>
@@ -503,7 +594,7 @@ function FreezeStep() {
             onClick={() => {
               amend(c.id, reason);
               setReason("");
-              setMsg("Lock cleared. The previous digest stays in the book.");
+              setMsg("Lock cleared. The previous digest stays in the book. Re-freeze, anchor again, and export before science entries.");
             }}
           >
             Amend and unlock
@@ -516,7 +607,7 @@ function FreezeStep() {
           disabled={!ready}
           onClick={async () => {
             const digest = await freeze(c.id);
-            setMsg(digest ? `Frozen ${digest.slice(0, 16)}…` : "Freeze refused. A required field is empty.");
+            setMsg(digest ? `Frozen ${digest.slice(0, 16)}… Anchor it, then export. The handset time is not the pre-registration.` : "Freeze refused. A required field is empty.");
           }}
         >
           Freeze and hash
@@ -559,10 +650,14 @@ function AnalysisA() {
 
   return (
     <div className="card space-y-3 p-4">
-      {!c.frozen ? <p className="text-sm text-warn">You can draft the arithmetic. The log waits until the registry is frozen.</p> : null}
+      {!registryAnchored(c) ? <p className="text-sm text-warn">You can draft the arithmetic. The log waits until the registry is frozen and externally anchored.</p> : null}
+      {!detectionReady(c) ? (
+        <p className="text-sm text-warn">Fewer than four nodes. This step can record a Phase 0 floor. It cannot record a detection.</p>
+      ) : null}
       {!c.logs.some((l) => l.kind === "injection" && l.title.includes("recovered")) ? (
         <p className="text-sm text-warn">No recovered injection is in the book. Switch 3 is live for any claim.</p>
       ) : null}
+      <Readout label="Named inputs" value={c.fields.namedInputs?.trim() ? "in the registry" : "blank"} hint={c.fields.namedInputs?.trim() || "Chain S needs two disjoint double-difference series. Chain C needs two disjoint same-satellite inter-node series."} />
       <Field label="Chain">
         <select className="select" value={chain} onChange={(e) => setChain(e.target.value as ChainId)}>
           <option value="S">Chain S · H_S</option>
@@ -595,13 +690,17 @@ function AnalysisA() {
       <button
         type="button"
         className="btn btn-primary w-full"
-        disabled={!c.frozen}
+        disabled={!registryAnchored(c)}
         onClick={() => {
+          if (call === "excess-hold" && !detectionReady(c)) {
+            setMsg("Detection refused. Four nodes and two disjoint pairs are the minimum. Log a floor or no-measurement.");
+            return;
+          }
           addLog(c.id, {
             kind: "analysis-a",
             chain,
             title: `Analysis A · Chain ${chain} · ${call}`,
-            body: `γ̂ ${gamma || "∅"}. T ${tDur || "∅"} s. τ_corr ${tau || "∅"} s. L_eff ${L ?? "∅"}. E[γ] ${law ? law.eGamma : "∅"}.`,
+            body: `Named inputs: ${c.fields.namedInputs?.trim() || "∅"}. γ̂ ${gamma || "∅"}. T ${tDur || "∅"} s. τ_corr ${tau || "∅"} s. L_eff ${L ?? "∅"}. E[γ] ${law ? law.eGamma : "∅"}. Phase ${detectionReady(c) ? "detection-grade roster" : "Phase 0"}.`,
           });
           setMsg("Analysis A appended. The residual itself was not generated here.");
         }}
@@ -704,7 +803,7 @@ function AnalysisB() {
       <button
         type="button"
         className="btn btn-primary w-full"
-        disabled={!c.frozen || !result}
+        disabled={!registryAnchored(c) || !result}
         onClick={() => {
           if (!result || !chosen) return;
           addLog(c.id, {
@@ -733,7 +832,7 @@ function ChromaticStep() {
   const hit = num(p1) != null && num(p2) != null ? chromatic(num(p1)!, num(p2)!, tol) : null;
   const label =
     hit?.klass === "delay"
-      ? "Delay class — candidate may proceed"
+      ? "Delay class — necessary, not sufficient. Troposphere, multipath, and clock are also delay-class."
       : hit?.klass === "iono"
         ? "Ionospheric class — back to the null"
         : hit?.klass === "offset"
@@ -743,7 +842,7 @@ function ChromaticStep() {
             : "—";
   return (
     <div className="card space-y-3 p-4">
-      <p className="text-sm text-muted">Tolerance from the registry: {sci(tol)}. Uncombined radians or cycles.</p>
+      <p className="text-sm text-muted">Tolerance from the registry: {sci(tol)}. Uncombined radians or cycles, both the same unit. A delay-class pass rejects ionosphere and a digital artifact. It is not evidence of anomalous coherence. Switch 2 cannot fire on a null.</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="φ₁ (L1)">
           <input className="field font-mono" value={p1} onChange={(e) => setP1(e.target.value)} />
@@ -756,9 +855,15 @@ function ChromaticStep() {
       <button
         type="button"
         className="btn btn-primary w-full"
-        disabled={!c.frozen || !hit}
+        disabled={!registryAnchored(c) || !hit}
         onClick={() => {
           if (!hit) return;
+          const a = num(p1);
+          const b = num(p2);
+          if (a != null && b != null && Math.abs(a) < 1e-4 && Math.abs(b) < 1e-4) {
+            setMsg("Switch 2 cannot fire on a null. Both entries are consistent with zero.");
+            return;
+          }
           addLog(c.id, {
             kind: "chromatic",
             title: `Switch 2 · ${hit.klass}`,
@@ -780,6 +885,7 @@ function SwitchStep() {
   const [n, setN] = useState("1");
   const [status, setStatus] = useState("null-holds");
   const [note, setNote] = useState("");
+  const [spot, setSpot] = useState(false);
   const [msg, setMsg] = useState("");
   return (
     <div className="card space-y-3 p-4">
@@ -804,13 +910,27 @@ function SwitchStep() {
       <Field label="Note">
         <textarea className="field textarea" value={note} onChange={(e) => setNote(e.target.value)} />
       </Field>
+      {n === "6" && status === "candidate-passed" ? (
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-1 h-5 w-5" checked={spot} onChange={(e) => setSpot(e.target.checked)} />
+          The excess survived a common-clock spot-check substitution. If it did not, Switch 6 has fired.
+        </label>
+      ) : null}
       <button
         type="button"
         className="btn btn-primary w-full"
-        disabled={!c.frozen || (n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b"))}
+        disabled={!registryAnchored(c) || (n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b"))}
         onClick={() => {
+          if (n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b")) {
+            setMsg("Switch 2 cannot fire without an Analysis A or Analysis B entry, and it cannot fire on a null.");
+            return;
+          }
           if (n === "2" && status === "candidate-passed" && !c.logs.some((l) => l.kind === "chromatic")) {
             setMsg("Switch 2 cannot pass without an uncombined L1/L5 entry.");
+            return;
+          }
+          if (n === "6" && status === "candidate-passed" && !spot) {
+            setMsg("Switch 6 does not pass unless the excess survived a common-clock spot-check. Record Fired if it moved.");
             return;
           }
           addLog(c.id, {
@@ -829,11 +949,73 @@ function SwitchStep() {
   );
 }
 
-function ReleaseHint() {
+function ReleaseStep() {
+  const c = useActive()!;
+  const setField = useBook((s) => s.setField);
+  const quote = chainCQuote(c);
+  const [msg, setMsg] = useState("");
+  const columns = [
+    ["predictedS", "Chain S predicted budget"],
+    ["measuredFloorS", "Chain S measured residual floor"],
+    ["reportedBoundS", "Chain S reported bound"],
+    ["predictedC", "Chain C predicted budget"],
+    ["measuredFloorC", "Chain C measured residual floor"],
+    ["reportedBoundC", "Chain C reported bound"],
+  ] as const;
+
+  function boundError(): string | null {
+    const reportedS = num(c.fields.reportedBoundS ?? "");
+    const measuredS = num(c.fields.measuredFloorS ?? "");
+    if (reportedS != null && measuredS != null && reportedS + 1e-9 < measuredS) {
+      return "Chain S reported bound is tighter than the measured double-difference floor. The first column does not tighten the third.";
+    }
+    const reportedC = num(c.fields.reportedBoundC ?? "");
+    if (reportedC != null && quote.failed) {
+      return "Chain C is not quotable. The common-clock decomposition failed. Switch 3. Clear the reported bound.";
+    }
+    if (reportedC != null && quote.boundHi != null && reportedC + 1e-9 < quote.boundHi) {
+      return `Chain C reported bound is tighter than the per-baseline maximum (${formatRad(quote.boundHi)}).`;
+    }
+    if (reportedC != null && !quote.quotable) {
+      return "Chain C has no co-located floor yet. Do not report a bound.";
+    }
+    return null;
+  }
+
   return (
-    <p className="text-sm text-muted">
-      Export lives in the book. Take the JSON off the handset the way you take any other file. The
-      nodes still hold the IQ.
-    </p>
+    <div className="space-y-3">
+      <p className="text-sm text-muted">
+        Predicted budget, measured residual floor, and reported bound are three different numbers. Chain S uses the measured double-difference floor. Chain C uses the per-baseline maximum from the clock step
+        {quote.quotable ? ` (${formatRad(quote.boundLo)} – ${formatRad(quote.boundHi)})` : ""}. Catalog rows stay catalog until you replace them. This page does not invent a residual.
+      </p>
+      {columns.map(([id, label]) => (
+        <Field key={id} label={label}>
+          <input className="field font-mono" value={c.fields[id] ?? ""} onChange={(e) => setField(c.id, id, e.target.value)} placeholder="rad, or leave blank" />
+        </Field>
+      ))}
+      <button
+        type="button"
+        className="btn btn-primary w-full"
+        onClick={() => {
+          const err = boundError();
+          if (err) {
+            setMsg(err);
+            return;
+          }
+          exportMilestone(c, "campaign-close");
+          setMsg("Campaign-close JSON download started. Export Markdown from Book and move both off the handset.");
+        }}
+      >
+        Close the campaign and export JSON
+      </button>
+      <button
+        type="button"
+        className="btn btn-ghost w-full"
+        onClick={() => download(`${campaignFilename(c.name)}.md`, campaignMarkdown(c), "text/markdown")}
+      >
+        Export Markdown
+      </button>
+      {msg ? <p className="text-sm text-muted">{msg}</p> : null}
+    </div>
   );
 }

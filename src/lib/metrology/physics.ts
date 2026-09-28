@@ -1,4 +1,4 @@
-/** Closed-form metrology from Rev 3.4. No measured residuals live here. */
+/** Closed-form metrology from Rev 3.5. No measured residuals live here. */
 
 export const C_MPS = 299_792_458;
 export const F_L1_HZ = 154 * 10.23e6;
@@ -6,7 +6,7 @@ export const F_L5_HZ = 115 * 10.23e6;
 export const F_RATIO = 154 / 115;
 export const IONO_RATIO = 115 / 154;
 export const LAMBDA_L1_M = C_MPS / F_L1_HZ;
-export const PAPER_REV = "3.4";
+export const PAPER_REV = "3.5";
 
 export type ChainId = "S" | "C";
 
@@ -19,7 +19,7 @@ export function num(raw: string | number | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** σ_φ ≈ 2π f τ σ_y  (rad). Rev 3.4 §3.4. */
+/** σ_φ ≈ 2π f τ σ_y  (rad). Rev 3.5 §3.4. */
 export function sigmaPhiRad(fHz: number, tauS: number, sigmaY: number): number {
   return 2 * Math.PI * fHz * tauS * sigmaY;
 }
@@ -85,8 +85,8 @@ export function weakPhase(sigmaPhi: number, r: number): { approx: number; exact:
 
 /**
  * |ionospheric carrier phase| in radians.
- * Δρ = −40.3 TEC / f² metres on the carrier; φ = 2π Δρ / λ.
- * TEC argument is in TECU (10¹⁶ m⁻²).
+ * Range scales as 1/f². Phase in radians or cycles scales as 1/f, because
+ * φ = 2π Δρ / λ and λ scales as 1/f. TEC argument is TECU (10¹⁶ m⁻²).
  */
 export function ionoPhaseRad(tecTecU: number, fHz: number): number {
   const tec = tecTecU * 1e16;
@@ -289,6 +289,27 @@ export function morphology(input: {
   };
 }
 
+/** 75 ps IGS final clock residual, in radians at a carrier. Identical at every node using that product. */
+export function igsClockRad(fHz: number, dtS = 75e-12): number {
+  return 2 * Math.PI * fHz * dtS;
+}
+
+/** Chain-S double-difference floor is √2 times the single-difference RSS. */
+export function doubleDifferenceFloor(singleDifferenceRad: number): number {
+  return singleDifferenceRad * Math.SQRT2;
+}
+
+/**
+ * Per-baseline Chain C bound. The maximum of the co-located non-clock floor,
+ * the isolated relative-clock term, and the baseline atmospheric differential.
+ * Missing terms are omitted. An empty list means the bound is not yet quotable.
+ */
+export function chainCBoundRad(parts: Array<number | null | undefined>): number | null {
+  const vals = parts.filter((v): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0);
+  if (!vals.length) return null;
+  return Math.max(...vals);
+}
+
 /** Variance split stated in §4.4. Valid only if the two runs differ by the clock. */
 export function clockIsolation(commonClockRms: number, independentRms: number): number | null {
   if (!(commonClockRms >= 0) || !(independentRms >= 0)) return null;
@@ -312,13 +333,17 @@ export function paperIdentityChecks(): IdentityCheck[] {
   const tau10 = lightTimeS(10_000);
   const d1 = baselineForLags(1_000, 1);
   const floor = betaNull(86_400);
-  const floor300 = betaNull(300);
-  const weak = weakPhase(0.3, floor?.rMin3 ?? 0);
-  const weak300 = floor300 ? weakPhase(0.3, floor300.rMin3) : null;
+  const weak = weakPhase(0.42, floor?.rMin3 ?? 0);
+  const weakO = weakPhase(0.42, 0.1);
   const pathMm = weak ? phaseToPathM(weak.approx, F_L1_HZ) * 1e3 : NaN;
-  const path300 = weak300 ? phaseToPathM(weak300.approx, F_L1_HZ) * 1e3 : NaN;
-  const rssLo = rss([pathToPhaseRad(0.01, F_L1_HZ), pathToPhaseRad(0.005, F_L1_HZ)]);
-  const rssHi = rss([pathToPhaseRad(0.01, F_L1_HZ), pathToPhaseRad(0.02, F_L1_HZ)]);
+  const pathO = weakO ? phaseToPathM(weakO.approx, F_L1_HZ) * 1e3 : NaN;
+  const phiO = weakO?.approx ?? NaN;
+  const sdLo = rss([pathToPhaseRad(0.01, F_L1_HZ), pathToPhaseRad(0.005, F_L1_HZ)]);
+  const sdHi = rss([pathToPhaseRad(0.01, F_L1_HZ), pathToPhaseRad(0.02, F_L1_HZ)]);
+  const ddLo = doubleDifferenceFloor(sdLo);
+  const ddHi = doubleDifferenceFloor(sdHi);
+  const igs = igsClockRad(F_L1_HZ);
+  const ionoScale = ionoHf / ionoL1;
 
   const near = (got: number, exp: number, frac: number) => Math.abs(got - exp) <= Math.abs(exp) * frac;
 
@@ -352,6 +377,20 @@ export function paperIdentityChecks(): IdentityCheck[] {
       pass: near(ionoHf, 8.4, 0.03),
     },
     {
+      id: "iono-scale",
+      label: "0.1 TECU, 100 MHz / L1",
+      got: ionoScale.toFixed(2),
+      expect: "≈ 15.75, not its square",
+      pass: near(ionoScale, F_L1_HZ / 100e6, 0.01) && ionoScale < 20,
+    },
+    {
+      id: "igs",
+      label: "IGS clock residual, 75 ps at L1",
+      got: igs.toFixed(3) + " rad",
+      expect: "≈ 0.7 rad",
+      pass: near(igs, 0.7, 0.08),
+    },
+    {
       id: "tau",
       label: "Light time, 10 km",
       got: (tau10 * 1e6).toFixed(2) + " µs",
@@ -381,24 +420,24 @@ export function paperIdentityChecks(): IdentityCheck[] {
     },
     {
       id: "weak",
-      label: "σ_φ=0.3, calendar r_min → path at L1",
+      label: "σ_φ=0.42 rad, calendar r_min → path at L1",
       got: Number.isFinite(pathMm) ? pathMm.toFixed(2) + " mm" : "—",
-      expect: "≈ 0.8 mm",
-      pass: near(pathMm, 0.8, 0.08),
+      expect: "≈ 1.1 mm",
+      pass: near(pathMm, 1.1, 0.08),
     },
     {
       id: "weak300",
-      label: "L_eff=300, κ=3 → path at L1",
-      got: Number.isFinite(path300) ? path300.toFixed(2) + " mm" : "—",
-      expect: "≈ 3.3 mm",
-      pass: near(path300, 3.3, 0.08),
+      label: "L_eff=300 illustration, r∼10⁻¹, σ_φ=0.42 rad",
+      got: Number.isFinite(pathO) ? `${phiO.toFixed(3)} rad · ${pathO.toFixed(2)} mm` : "—",
+      expect: "φ_s≈0.13 rad ≈ 4.0 mm",
+      pass: near(phiO, 0.13, 0.05) && near(pathO, 4.0, 0.08),
     },
     {
       id: "rss",
-      label: "Chain S RSS, trop 1 cm + multipath 0.5–2 cm",
-      got: rssLo.toFixed(2) + "–" + rssHi.toFixed(2) + " rad",
-      expect: "inside 0.30–0.80 rad",
-      pass: rssLo >= 0.3 && rssLo <= 0.5 && rssHi >= 0.6 && rssHi <= 0.8,
+      label: "Chain S double-difference floor, trop + multipath",
+      got: ddLo.toFixed(2) + "–" + ddHi.toFixed(2) + " rad",
+      expect: "inside 0.4–1.1 rad",
+      pass: ddLo >= 0.4 && ddLo <= 0.7 && ddHi >= 0.9 && ddHi <= 1.15,
     },
   ];
 }

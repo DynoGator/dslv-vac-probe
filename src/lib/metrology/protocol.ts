@@ -119,18 +119,38 @@ export const PREREG: PreregField[] = [
   {
     id: "switch2tol",
     label: "Switch 2 relative tolerance",
-    hint: "On φ₁/φ₂, classification product, radians or cycles. Example: 0.05.",
+    hint: "On φ₁/φ₂, radians or cycles. Passing the delay class is necessary, not sufficient. Example: 0.05.",
     placeholder: "0.05",
   },
   {
     id: "clockFloorRad",
     label: "Common-clock non-clock floor (rad)",
-    hint: "Measured. Chain C's bound cannot be quoted tighter than this. Leave blank until the run exists.",
+    hint: "Measured co-located non-clock floor. One term of the Chain C maximum, not the whole bound. Leave blank until the run exists.",
   },
   {
     id: "biasHash",
-    label: "L1/L5 inter-channel bias file hash",
-    hint: "From the common-clock run. The phase-offset-class confound for Switch 2.",
+    label: "L1/L5 inter-channel bias hash",
+    hint: "SHA-256 of the bias file from the common-clock run. Filled on the clock step, not here.",
+  },
+  {
+    id: "namedInputs",
+    label: "Named estimator inputs",
+    hint: "Chain S: two disjoint double-difference series. Chain C: two disjoint same-satellite inter-node series. A 2–3 node array is Phase 0, not a search.",
+  },
+  {
+    id: "wipeoff",
+    label: "Data-bit wipeoff and cycle slips",
+    hint: "L1 C/A wipeoff method, and the slip detect, repair, and exclusion rule. Unrepaired slips never enter an Analysis A window.",
+  },
+  {
+    id: "phase0",
+    label: "Phase 0 validation",
+    hint: "Residual floor, measured L_eff, injection recovery, empirical false-alarm rate, and bound coverage. Publish these before any search claim.",
+  },
+  {
+    id: "calibTransfer",
+    label: "Calibration transfer",
+    hint: "Repeat schedule, interleaved spot checks, drift tolerance, and the per-baseline atmospheric treatment. A spot check outside tolerance is Switch 3.",
   },
 ];
 
@@ -153,9 +173,9 @@ export const STEPS: StepDef[] = [
     imageAlt: "Night sky with two satellite glints and a survey tripod, standing in for a sky gradient.",
     caption: "H_S lives on direction. H_C does not. A null on one chain does not constrain the other.",
     paragraphs: [
-      "H_S is a direction-dependent anomalous phase — a sky gradient. Chain S, the between-satellite single difference, cancels isotropic site-common phase by construction. A null on Chain S does not touch H_C.",
-      "H_C is an isotropic common phase, identical at every antenna regardless of which satellite is tracked. Only Chain C keeps receiver-common phase. It inherits the receiver clock. The title hypothesis lives on the harder chain.",
-      "The array is a phase microscope pointed at zero. This program tests no predicted amplitude. A null is the expected result, and the bound is the product.",
+      "H_S is a direction-dependent anomalous phase — a sky gradient. Chain S, the between-node double difference of between-satellite single differences, cancels isotropic site-common phase and both clocks exactly. A null on Chain S does not touch H_C.",
+      "H_C is anomalous phase common to the tracked carriers at a site and correlated across sites, with a non-vanishing inter-site differential. A phase literally identical at every antenna cancels in every inter-node difference and is unobservable. Only Chain C keeps that surviving differential. It inherits the receiver clock.",
+      "The paper reports upper bounds. The vacuum-structure question motivates the program and is not a claim of §§1–8. A null is the expected result, and the bound is the product.",
     ],
   },
   {
@@ -166,9 +186,9 @@ export const STEPS: StepDef[] = [
     imageAlt: "A field kit: handset, antenna cable, and hard hat on a flight case at dusk.",
     caption: "The phone keeps the book. The node tracks the carrier. Do not swap them.",
     paragraphs: [
-      "Raw wideband IQ stays in a ring buffer. Tracking loops dump prompt-correlator I/Q at f_d. Carrier phase is atan2(Q, I) on that dump.",
-      "Chain S is formed per node, then IGS satellite-clock correction is applied per node before any inter-node comparison. Analysis A consumes those post-IGS single-difference residuals. The double difference is a consistency cross-check, not the estimator input.",
-      "Chain C is the same-satellite inter-node difference. The satellite clock cancels. The receiver clock does not. Below the GPSDO steering bandwidth the nodes are one clock, and those frequencies are excluded on both chains.",
+      "Raw wideband IQ stays in a ring buffer on the nodes. The per-dump observable is NCO carrier phase plus the prompt discriminator residual. atan2(Q, I) alone is the loop residual, not the carrier. L1 C/A needs data-bit wipeoff. Cycle slips follow the pre-registered rule; unrepaired slips are excluded.",
+      "Chain S forms a between-satellite single difference per node, then the between-node double difference. That double difference is the Analysis A and B input. It cancels the shared IGS clock residual, about 0.7 rad at L1, exactly. The per-node post-IGS single difference is a diagnostic of the subtraction, not a detection input.",
+      "Chain C is the same-satellite inter-node difference. The satellite clock cancels. The receiver clock does not. Below the GPSDO steering bandwidth the nodes are one clock, and those frequencies are excluded on both chains. Detection-grade work uses two disjoint pairs, which means four nodes. Two or three nodes are Phase 0.",
     ],
   },
   {
@@ -177,10 +197,10 @@ export const STEPS: StepDef[] = [
     title: "Put the array on the page",
     image: ART.hero,
     imageAlt: "Two choke-ring antennas and a field rack under a desert night sky.",
-    caption: "DSLV-ZPDI nodes. Two front ends are the minimum that makes a pair.",
+    caption: "Two front ends are Phase 0. Detection-grade work needs four nodes.",
     paragraphs: [
-      "Each node is a GNSS-disciplined oscillator, an SDR, and a surveyed antenna. Record the installed unit's identity. Catalog ADEV is not accepted where the paper says the measured curve is load-bearing.",
-      "A device fix from this handset is a real GNSS solution if the radio returns one. It is not a carrier-phase residual, and it is not a substitute for a geodetic monument. You can type a surveyed coordinate instead. Empty stays empty.",
+      "Each node is a GNSS-disciplined oscillator, an SDR, and a surveyed antenna. Record the installed unit. Catalog ADEV is not accepted where the paper says the measured curve is load-bearing.",
+      "Two identified nodes are enough for Phase 0: floor, injection recovery, and a single-baseline lag class. Detection-grade Analysis A needs four nodes so the statistic can use two disjoint pairs. A device fix is not carrier phase and not a monument. Empty coordinates stay empty.",
     ],
   },
   {
@@ -204,7 +224,8 @@ export const STEPS: StepDef[] = [
     caption: "Common-clock Chain C has site phase and inter-channel bias, and no relative clock wander by construction.",
     paragraphs: [
       "One GPSDO output drives two complete front ends at one site, antennas a metre apart. That pair measures the non-clock floor. The independent-clock co-located pair measures site-common plus relative clock. Differencing the configurations isolates the clock term.",
-      "If the common-clock pair does not sit on its predicted null, the campaign stops at Switch 3. No science claim. Chain C's bound is this measured floor — not the atmospheric RSS, whatever the RSS says.",
+      "If the common-clock pair does not sit on its predicted null, or a later spot check leaves the frozen tolerance, the campaign stops at Switch 3. The calibration measures this site's hardware. It does not reproduce far-site troposphere, far-site multipath, or independent GPSDO drift.",
+      "Per baseline, the Chain C bound is the maximum of the co-located non-clock floor, the isolated relative-clock term, and the baseline atmospheric differential. No tighter number is quoted. Drift variance between repeats is added in quadrature to the floor.",
     ],
   },
   {
@@ -215,8 +236,8 @@ export const STEPS: StepDef[] = [
     imageAlt: "Two co-located antennas under one even glow.",
     caption: "Isotropic injection must appear on Chain C and vanish on Chain S. The reverse pattern is H_S.",
     paragraphs: [
-      "Open injections test the pipeline. Blind injections test the analysts. Log recovery only after you have actually run it. A sealed blind injection is logged as sealed — do not type an amplitude you are not supposed to know.",
-      "A chain that fails its distinctive injection has no standing to report an excess. Off-injection must return to the null floor.",
+      "Open injections test the pipeline. Blind injections test the analysts. Before any detection claim, run end-to-end trials into realistic residuals and record the empirical false-alarm rate and bound coverage. A sealed injection is logged as sealed.",
+      "Isotropic site-common phase must appear on Chain C and vanish on Chain S. Direction-differential phase must appear on Chain S. Off-injection must return to the null floor. A chain that misses its signature, the false-alarm target, or the coverage target has no standing to report an excess.",
     ],
   },
   {
@@ -239,8 +260,8 @@ export const STEPS: StepDef[] = [
     imageAlt: "Null fringe on an optical table, the expected picture.",
     caption: "SHA-256 of the canonical registry. Amendments stay visible.",
     paragraphs: [
-      "Freezing hashes the nodes, the pre-registration fields, and the budget rows you have marked. Science logs after this point are append-only.",
-      "An amendment clears the lock, stores the previous digest, and stamps the reason. The book does not pretend the original registry is still the one you froze.",
+      "Freezing hashes the nodes, the pre-registration fields, and the budget rows. The handset time is self-attested. Without an external anchor — OSF, a signed git tag, or OpenTimestamps / RFC-3161 — the freeze is a draft, not a pre-registration.",
+      "Record the anchor transaction ID beside the digest, then export the JSON. An amendment clears the lock, stores the previous digest, and needs a new anchor and a new export before science entries.",
     ],
   },
   {
@@ -251,8 +272,8 @@ export const STEPS: StepDef[] = [
     imageAlt: "The field array the residuals actually come from.",
     caption: "Type γ̂ from the node reduction. The Beta law is computed. The residual is not.",
     paragraphs: [
-      "Calendar seconds are not independent. Use L_eff from the frozen block length, or type the γ̂ you measured and the L you are willing to defend.",
-      "The large-L floor with L = 86400 is shown only as the paper's trap. It is not the program floor. Systematics sit above both.",
+      "Chain S consumes two disjoint double-difference series. Chain C consumes two disjoint same-satellite inter-node series. With fewer than four nodes this step can record a Phase 0 floor. It cannot record a detection.",
+      "The large-L floor with L = 86400 is the paper's trap. It is not the program floor. Report predicted budget, measured residual floor, and reported bound as three different numbers.",
     ],
   },
   {
@@ -275,8 +296,8 @@ export const STEPS: StepDef[] = [
     imageAlt: "A short copper helix and a longer amber helix over a survey mark.",
     caption: "φ in radians or cycles. Delay class tracks f₁/f₂. Ionosphere tracks the inverse. Equal radians is a processing artifact.",
     paragraphs: [
-      "The iono-free combination mixes the carriers and destroys the chromatic ratio. It is never the Switch 2 observable.",
-      "Delay class, ratio ≈ 1.339: equal in seconds or metres. Ionospheric class, ratio ≈ 0.747: routes back to the null. Phase-offset class, ratio = 1: instrumental. Anything that matches none of them does not pass.",
+      "The iono-free combination mixes the carriers and destroys the chromatic ratio. It is never the Switch 2 observable. Both entries must be radians, or both cycles. Do not substitute metres.",
+      "Delay class, ratio ≈ 1.339, is the only class that may proceed, and passing it is necessary, not sufficient: troposphere, multipath, and clock error are also delay-class. Ionosphere ≈ 0.747 returns to the null. Ratio 1 is instrumental. A mixture that matches no class is not promoted.",
     ],
   },
   {
@@ -285,9 +306,9 @@ export const STEPS: StepDef[] = [
     title: "Adjudicate the kill switches",
     image: ART.null,
     imageAlt: "The null fringe is a result, not a failure.",
-    caption: "Instrument switches only. Appendix B does not gate the array.",
+    caption: "Instrument switches only. Supplement S2 does not gate the array.",
     paragraphs: [
-      "A null on Chain S is not a null on Chain C. Switch 2 cannot fire on a null. Switch 3 stops the campaign until the pipeline is repaired. Switch 6 is load-bearing on H_C.",
+      "A null on Chain S is not a null on Chain C. Switch 2 cannot fire on a null, and a delay-class pass is not evidence of anomalous coherence. Switch 3 stops the campaign until the pipeline is repaired. Switch 6 is load-bearing on H_C.",
       "Record the call you are actually making. The book will not mark a switch passed because a field was left on its default.",
     ],
   },
@@ -299,8 +320,8 @@ export const STEPS: StepDef[] = [
     imageAlt: "The handset that carries the record off the hill.",
     caption: "JSON for the archive. Markdown for a human. Both are the campaign you typed.",
     paragraphs: [
-      "Raw IQ stays on the nodes. This export is the pre-registration, the measured floors, the injection log, and the adjudications. A null is a publishable pair of upper bounds.",
-      "Chain S is bounded by troposphere and multipath under the rows you marked measured — catalog rows stay labeled catalog. Chain C is bounded by the common-clock floor, or it is not bounded.",
+      "Raw IQ stays on the nodes. Export at every frozen milestone: registry freeze, amendment re-freeze, calibration append, and campaign close. A null is a publishable pair of upper bounds.",
+      "For each chain write three columns: predicted budget, measured residual floor, and reported bound. Chain S uses the measured double-difference floor. Chain C uses the per-baseline maximum. The first column does not imply the third.",
     ],
   },
 ];
@@ -321,18 +342,18 @@ export const SWITCHES: {
     n: 2,
     title: "Chromaticity",
     blast: "The candidate, not the array. This switch cannot fire on a null.",
-    body: "Uncombined L1 and L5. Delay class φ₁/φ₂ = f₁/f₂. Ionospheric class φ₁/φ₂ = f₂/f₁. Phase-offset class φ₁/φ₂ = 1. Only the delay class, inside the pre-registered tolerance, survives.",
+    body: "Uncombined L1 and L5, with uncertainty. Delay class φ₁/φ₂ ≈ 1.339 may proceed, but passing is necessary, not sufficient: troposphere, multipath, and clock error are also delay-class. Ionospheric class ≈ 0.747 returns to the null. Phase-offset class = 1 is instrumental. A mixture that matches no class is not promoted. Hardware frequency dependence is bounded by the common-clock run.",
   },
   {
     n: 3,
     title: "Pipeline non-recovery",
     blast: "The campaign, until the pipeline is repaired. No science claim.",
-    body: "Open or blind injection not recovered, off-injection not back on the null floor, time-slide background disagrees with the bootstrap, or the common-clock pair misses its predicted null.",
+    body: "Open or blind injection not recovered, including the distinctive chain pattern, or off-injection not back on the null floor, or the time-slide background disagrees with the bootstrap, or the empirical false-alarm rate misses its target, or the common-clock pair or a spot check misses its predicted null.",
   },
   {
     n: 4,
     title: "Möbius holonomy as physics",
-    blast: "Appendix A as physics. Keep as bookkeeping if useful.",
+    blast: "Supplement S1 as physics. Keep as bookkeeping if useful.",
     body: "A closed RF or fiber loop of controlled area and reversed chirality yields only standard Berry, Faraday, or Sagnac phase. No extra discrete π.",
   },
   {
@@ -345,6 +366,6 @@ export const SWITCHES: {
     n: 6,
     title: "Simultaneity convention",
     blast: "Any non-local reading of that dataset. Load-bearing on Chain C.",
-    body: "If a |τ| ≪ τ_c excess moves under an independent time transfer — two-way optical, common-view versus all-in-view, or a second constellation — it is a clock-ensemble artifact.",
+    body: "If a |τ| ≪ τ_c excess moves under an independent time transfer — two-way optical, common-view versus all-in-view, or a second constellation — or does not survive a common-clock spot-check substitution, it is a clock-ensemble artifact.",
   },
 ];

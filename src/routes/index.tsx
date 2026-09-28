@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Field, Plate, Shell, Tag } from "@/components/chrome";
-import { clockReady, nodesReady, preregComplete, useActive, useBook } from "@/lib/book";
+import { clockReady, detectionReady, nodesReady, preregComplete, registryAnchored, useActive, useBook } from "@/lib/book";
 import { identityPassCount } from "@/lib/book";
 import { ART, STEPS } from "@/lib/metrology/protocol";
 import { num, sigmaPhiRad, F_L1_HZ } from "@/lib/metrology/physics";
@@ -37,11 +37,10 @@ function DeckBody() {
         />
         <div className="plate-scrim absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="kicker">Rev 3.4 · Resonant Genesis LLC</p>
-          <h1 className="mt-1 text-2xl font-semibold">Probing the Vacuum Structure</h1>
+          <p className="kicker">Rev 3.5 · Resonant Genesis LLC</p>
+          <h1 className="mt-1 text-2xl font-semibold">Upper bounds on carrier-phase coherence</h1>
           <p className="mt-1 max-w-prose text-sm text-accent">
-            Carrier-phase coherence after the null is subtracted. Two chains. Two bounds. A null is
-            the expected result.
+            The vacuum-structure question motivates DSLV-ZPDI. The paper reports two upper bounds. A null is the expected result.
           </p>
         </div>
       </section>
@@ -51,16 +50,14 @@ function DeckBody() {
           <Tag>H_S · Chain S</Tag>
           <h2 className="mt-2 font-semibold">Sky gradient</h2>
           <p className="mt-1 text-sm text-muted">
-            Between-satellite single difference. Blind to isotropic site phase. Bounds
-            direction-dependent residual coherence.
+            Between-node double difference of between-satellite single differences. Blind to isotropic site phase. The shared IGS clock residual cancels. A null here does not constrain H_C.
           </p>
         </article>
         <article className="card p-4">
           <Tag tone="warn">H_C · Chain C</Tag>
-          <h2 className="mt-2 font-semibold">Isotropic common phase</h2>
+          <h2 className="mt-2 font-semibold">Correlated site-common differential</h2>
           <p className="mt-1 text-sm text-muted">
-            Same-satellite inter-node difference. Keeps receiver-common phase. Bound set by the
-            measured common-clock floor, or not quoted.
+            Same-satellite inter-node difference. A phase identical at every antenna cancels and is unobservable. The bound is the per-baseline maximum, or it is not quoted.
           </p>
         </article>
       </section>
@@ -107,7 +104,9 @@ function DeckBody() {
                 {campaign.operator || "Operator unset"} · {campaign.site || "Site unset"}
               </p>
             </div>
-            <Tag tone={campaign.frozen ? "ok" : "warn"}>{campaign.frozen ? "Locked" : "Unlocked"}</Tag>
+            <Tag tone={registryAnchored(campaign) ? "ok" : campaign.frozen ? "warn" : "steel"}>
+              {registryAnchored(campaign) ? "Anchored" : campaign.frozen ? "Draft freeze" : "Unlocked"}
+            </Tag>
           </div>
           <dl className="grid grid-cols-2 gap-2 text-sm">
             <div className="rounded-md bg-elevated px-3 py-2">
@@ -128,14 +127,21 @@ function DeckBody() {
             </div>
           </dl>
           <p className="text-sm text-muted">
-            {nodesReady(campaign) ? "Array roster meets the two-node bar." : "Roster still needs two identified nodes with measured σ_y and f_loop."}{" "}
+            {nodesReady(campaign)
+              ? detectionReady(campaign)
+                ? "Four nodes. Detection-grade disjoint pairs are possible."
+                : "Roster meets the Phase 0 pair. Detection-grade Analysis A still needs four nodes."
+              : "Roster still needs two identified nodes with measured σ_y and f_loop."}{" "}
             Walk is on {step?.section} — {step?.title}.
           </p>
           <Link to="/walk" className="btn btn-primary w-full">
             Continue the walk
           </Link>
           {campaign.frozen ? (
-            <p className="break-all font-mono text-xs text-muted">{campaign.frozen.sha256}</p>
+            <p className="break-all font-mono text-xs text-muted">
+              {campaign.frozen.sha256}
+              {campaign.frozen.anchorId.trim() ? ` · ${campaign.frozen.anchorKind} ${campaign.frozen.anchorId}` : " · no external anchor"}
+            </p>
           ) : null}
           <ul className="space-y-1 text-sm">
             {campaign.nodes.map((n) => {
@@ -178,7 +184,7 @@ function DeckBody() {
         <div>
           <p className="kicker">Formula identity</p>
           <p className="mt-1 text-sm text-muted">
-            Closed forms checked against the numbers quoted in Rev 3.4. A miss here is an app bug,
+            Closed forms checked against the numbers quoted in Rev 3.5. A miss here is an app bug,
             not a measurement.
           </p>
         </div>
@@ -190,8 +196,32 @@ function DeckBody() {
       <Plate
         src={ART.companion}
         alt="An RF rack in front of a closed glass door, companion studies kept out of the array."
-        caption="Appendix B stays behind the glass. It does not gate Chain S or Chain C."
+        caption="Supplement S2 stays behind the glass. It does not gate Chain S or Chain C."
       />
+
+      <section className="card space-y-2 p-4 text-sm">
+        <p className="kicker">Rev 3.5 documents</p>
+        <p>
+          <a className="text-primary underline" href="/rev-3.5-white-paper.pdf">
+            White paper
+          </a>
+          {" · "}
+          <a className="text-primary underline" href="/rev-3.5-user-guide.pdf">
+            Install and user guide
+          </a>
+          {" · "}
+          <a className="text-primary underline" href="/DSLV-ZPDI-Probing-The-Vacuum-Structure-GUIDE.md">
+            Guide, markdown
+          </a>
+        </p>
+        <p className="text-muted">
+          Production origin{" "}
+          <a className="text-primary underline" href="https://dslv-vac-probe.grok.me">
+            dslv-vac-probe.grok.me
+          </a>
+          . A preview is a different book.
+        </p>
+      </section>
     </div>
   );
 }

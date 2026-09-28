@@ -12,6 +12,7 @@ import {
 import { Field, Readout, Shell, Tag } from "@/components/chrome";
 import { rowRad, useActive, useBook } from "@/lib/book";
 import { formatBaseline, formatRad, formatSeconds, sci } from "@/lib/metrology/format";
+import { chainCQuote, chainSSpan } from "@/lib/metrology/report";
 import {
   F_L1_HZ,
   F_L5_HZ,
@@ -28,7 +29,6 @@ import {
   nyquistHz,
   paperIdentityChecks,
   phaseToPathM,
-  rss,
   sigmaPhiRad,
   weakPhase,
 } from "@/lib/metrology/physics";
@@ -51,7 +51,7 @@ function BenchPage() {
           <h1 className="text-2xl font-semibold">Bench</h1>
           <p className="mt-1 text-sm text-muted">
             Every number on this page is an evaluation of a formula, or a row you typed. Placeholders
-            are the Rev 3.4 worked example. They are not measurements, and they are not written into
+            are the Rev 3.5 worked example. They are not measurements, and they are not written into
             the book unless you are on the walk.
           </p>
         </header>
@@ -190,10 +190,10 @@ function Weak() {
   const [r, setR] = useState("");
   const w = num(sig) != null && num(r) != null ? weakPhase(num(sig)!, num(r)!) : null;
   return (
-    <Tool title="Weak common phase" section="§5" hint="The paper reports φ ≈ σ √r. Exact inversion is beside it.">
+    <Tool title="Weak common phase" section="§5" hint="Rev 3.5 uses σ_φ = 0.42 rad. The paper reports φ ≈ σ √r. Exact inversion is beside it.">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="σ_φ (rad)">
-          <input className="field font-mono" value={sig} placeholder="0.3" onChange={(e) => setSig(e.target.value)} />
+          <input className="field font-mono" value={sig} placeholder="0.42" onChange={(e) => setSig(e.target.value)} />
         </Field>
         <Field label="r">
           <input className="field font-mono" value={r} placeholder="0.0077" onChange={(e) => setR(e.target.value)} />
@@ -213,7 +213,7 @@ function Chroma() {
   const [tol, setTol] = useState("");
   const hit = num(a) != null && num(b) != null ? chromatic(num(a)!, num(b)!, num(tol) ?? 0.05) : null;
   return (
-    <Tool title="Chromatic class" section="Switch 2" hint={`Targets: delay ${sci(F_RATIO, 4)}, ionosphere ${sci(1 / F_RATIO, 4)}, offset 1.`}>
+    <Tool title="Chromatic class" section="Switch 2" hint={`Targets: delay ${sci(F_RATIO, 4)}, ionosphere ${sci(1 / F_RATIO, 4)}, offset 1. A delay-class pass is necessary, not sufficient.`}>
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="φ₁">
           <input className="field font-mono" value={a} placeholder="1.339" onChange={(e) => setA(e.target.value)} />
@@ -234,13 +234,21 @@ function Iono() {
   const [tec, setTec] = useState("");
   const t = num(tec);
   return (
-    <Tool title="Ionospheric carrier phase" section="§3" hint="0.1 TECU is the paper's optimistic single-frequency residual, not a forecast.">
+    <Tool title="Ionospheric carrier phase" section="§3" hint="Phase in radians scales as 1/f. Delay and range scale as 1/f². 0.1 TECU is ≈8.4 rad at 100 MHz and ≈0.53 rad at L1, a factor of ≈15.75, not its square. Not a forecast.">
       <Field label="TEC (TECU)">
         <input className="field font-mono" value={tec} placeholder="0.1" onChange={(e) => setTec(e.target.value)} />
       </Field>
       <div className="grid gap-3 sm:grid-cols-2">
         <Readout label="L1" value={t == null ? "—" : formatRad(ionoPhaseRad(t, F_L1_HZ))} />
-        <Readout label="100 MHz" value={t == null ? "—" : formatRad(ionoPhaseRad(t, 100e6))} hint="Why the science band is L-band." />
+        <Readout
+          label="100 MHz"
+          value={t == null ? "—" : formatRad(ionoPhaseRad(t, 100e6))}
+          hint={
+            t == null || ionoPhaseRad(t, F_L1_HZ) === 0
+              ? "Factor withheld."
+              : `100 MHz / L1 = ${(ionoPhaseRad(t, 100e6) / ionoPhaseRad(t, F_L1_HZ)).toFixed(2)}. Not squared.`
+          }
+        />
       </div>
     </Tool>
   );
@@ -340,28 +348,19 @@ function BudgetTool() {
       </Tool>
     );
   }
-  const lows: number[] = [];
-  const highs: number[] = [];
-  for (const row of c.budget) {
-    if (row.name.startsWith("Multipath")) continue;
-    if (!row.rss) continue;
-    const rad = rowRad(row);
-    if (rad == null) continue;
-    lows.push(rad);
-    highs.push(rad);
-  }
-  const mpLo = c.budget.find((r) => r.name.includes("low"));
-  const mpHi = c.budget.find((r) => r.name.includes("high"));
-  const lo = mpLo ? rowRad(mpLo) : null;
-  const hi = mpHi ? rowRad(mpHi) : null;
-  if (lo != null) lows.push(lo);
-  if (hi != null) highs.push(hi);
+  const span = chainSSpan(c);
+  const quote = chainCQuote(c);
   return (
-    <Tool title="Chain S differential floor" section="§5" hint="RSS of included rows, with the low and high multipath cases shown as a span. Chain C is not this number.">
+    <Tool title="Chain S differential floor" section="§5" hint="Single-difference RSS, then ×√2 for the Chain S double-difference floor. Chain C is the per-baseline maximum, not this RSS. Catalog rows stay labeled until replaced.">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Readout label="RSS, multipath low" value={formatRad(lows.length ? rss(lows) : null)} />
-        <Readout label="RSS, multipath high" value={formatRad(highs.length ? rss(highs) : null)} />
+        <Readout label="Single-difference RSS" value={span.sdLo == null ? "—" : `${formatRad(span.sdLo)} – ${formatRad(span.sdHi)}`} hint={span.catalog ? "Includes catalog rows." : "Measured rows only."} />
+        <Readout label="Double-difference floor" value={span.ddLo == null ? "—" : `${formatRad(span.ddLo)} – ${formatRad(span.ddHi)}`} hint="√2 times the single difference. Paper span is about 0.4–1.1 rad." />
       </div>
+      <Readout
+        label="Chain C maximum"
+        value={quote.failed ? "not quotable" : quote.boundHi == null ? "needs the co-located floor" : `${formatRad(quote.boundLo)} – ${formatRad(quote.boundHi)}`}
+        hint="Max of co-located non-clock floor, isolated clock, and troposphere-plus-multipath. Not the double-difference floor."
+      />
       <ul className="space-y-3">
         {c.budget.map((row) => (
           <li key={row.id} className="rounded-md border border-border p-3">
@@ -408,7 +407,7 @@ function BudgetTool() {
 function Identity() {
   const rows = paperIdentityChecks();
   return (
-    <Tool title="Identity against Rev 3.4" section="Self-check" hint="If a row fails, the app is wrong. Do not interpret it as a residual.">
+    <Tool title="Identity against Rev 3.5" section="Self-check" hint="If a row fails, the app is wrong. Do not interpret it as a residual.">
       <ul className="space-y-2">
         {rows.map((r) => (
           <li key={r.id} className="flex items-start justify-between gap-3 border-b border-border pb-2 text-sm">
