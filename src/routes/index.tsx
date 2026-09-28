@@ -37,7 +37,7 @@ function DeckBody() {
         />
         <div className="plate-scrim absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="kicker">Rev 3.5 · Resonant Genesis LLC</p>
+          <p className="kicker">Rev 3.6 · Resonant Genesis LLC</p>
           <h1 className="mt-1 text-2xl font-semibold">Upper bounds on carrier-phase coherence</h1>
           <p className="mt-1 max-w-prose text-sm text-accent">
             The vacuum-structure question motivates DSLV-ZPDI. The paper reports two upper bounds. A null is the expected result.
@@ -184,7 +184,7 @@ function DeckBody() {
         <div>
           <p className="kicker">Formula identity</p>
           <p className="mt-1 text-sm text-muted">
-            Closed forms checked against the numbers quoted in Rev 3.5. A miss here is an app bug,
+            Closed forms checked against the numbers quoted in Rev 3.6. A miss here is an app bug,
             not a measurement.
           </p>
         </div>
@@ -196,27 +196,22 @@ function DeckBody() {
       <Plate
         src={ART.companion}
         alt="An RF rack in front of a closed glass door, companion studies kept out of the array."
-        caption="Supplement S2 stays behind the glass. It does not gate Chain S or Chain C."
+        caption="Supplements S1 and S2 are withheld from the Rev 3.6 submission. They do not gate a chain."
       />
 
       <section className="card space-y-2 p-4 text-sm">
-        <p className="kicker">Rev 3.5 documents</p>
-        <p>
-          <a className="text-primary underline" href="/rev-3.5-white-paper.pdf">
-            White paper
+        <p className="kicker">Rev 3.6 submission</p>
+        <div className="mt-2 flex flex-col gap-2">
+          <a className="hit-link" href="/rev-3.6-submission.pdf">
+            Mission, white paper, and field-book guide
           </a>
-          {" · "}
-          <a className="text-primary underline" href="/rev-3.5-user-guide.pdf">
-            Install and user guide
+          <a className="hit-link" href="/DSLV-ZPDI-Probing-The-Vacuum-Structure-GUIDE.md">
+            Install guide, markdown
           </a>
-          {" · "}
-          <a className="text-primary underline" href="/DSLV-ZPDI-Probing-The-Vacuum-Structure-GUIDE.md">
-            Guide, markdown
-          </a>
-        </p>
+        </div>
         <p className="text-muted">
           Production origin{" "}
-          <a className="text-primary underline" href="https://dslv-vac-probe.grok.me">
+          <a className="hit-link" href="https://dslv-vac-probe.grok.me">
             dslv-vac-probe.grok.me
           </a>
           . A preview is a different book.

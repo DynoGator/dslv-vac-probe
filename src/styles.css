@@ -10,21 +10,21 @@
   --font-sans: "IBM Plex Sans", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-background: #0a0c0f;
-  --color-foreground: #eceef1;
-  --color-card: #13171c;
-  --color-elevated: #1a1f26;
-  --color-muted: #8d949e;
-  --color-subtle: #6b7380;
-  --color-primary: #8eb4ad;
-  --color-primary-foreground: #0a0c0f;
-  --color-accent: #c8ccd2;
-  --color-ok: #7fae96;
-  --color-warn: #b89a6a;
-  --color-hot: #d4524a;
-  --color-hot-foreground: #0a0c0f;
-  --color-border: #2a313a;
-  --color-grid: #1c222a;
+  --color-background: #07090c;
+  --color-foreground: #f4f6f8;
+  --color-card: #12171d;
+  --color-elevated: #1b222b;
+  --color-muted: #c5ced6;
+  --color-subtle: #9aa8b5;
+  --color-primary: #9dcec4;
+  --color-primary-foreground: #07110f;
+  --color-accent: #e4e8ee;
+  --color-ok: #8fceb0;
+  --color-warn: #e0c48a;
+  --color-hot: #e36b64;
+  --color-hot-foreground: #140808;
+  --color-border: #3d4b5c;
+  --color-grid: #141a21;
 
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
@@ -45,6 +45,8 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.55;
     background-color: var(--color-background);
     color: var(--color-foreground);
     touch-action: manipulation;
@@ -72,11 +74,12 @@
   textarea {
     font-family: inherit;
     font-size: 1rem;
+    line-height: 1.45;
   }
 
   :focus-visible {
     outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 }
 
@@ -109,12 +112,13 @@
 .field,
 .select {
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   background: var(--color-background);
   color: var(--color-foreground);
   padding: 0.7rem 0.85rem;
+  box-shadow: inset 3px 0 0 var(--color-primary);
 }
 
 .field:disabled,
@@ -127,37 +131,108 @@
   resize: vertical;
 }
 
+input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+  outline: 1.5px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  min-height: 44px;
-  padding: 0.6rem 1rem;
+  min-height: 48px;
+  padding: 0.7rem 1rem;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  border: 1px solid transparent;
+  cursor: pointer;
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent);
+  transition: transform 80ms ease, background-color 80ms ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-primary {
   background: var(--color-primary);
   color: var(--color-primary-foreground);
+  border-color: var(--color-accent);
 }
 
 .btn-ghost {
-  background: transparent;
+  background: var(--color-elevated);
   color: var(--color-foreground);
-  border-color: var(--color-border);
+  border-color: var(--color-primary);
 }
 
 .btn-hot {
   background: var(--color-hot);
   color: var(--color-hot-foreground);
+  border-color: var(--color-accent);
+}
+
+.hit-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.35rem 0.7rem;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: var(--color-elevated);
+}
+
+.nav-hit {
+  display: flex;
+  min-height: 52px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  background: var(--color-card);
+}
+
+.nav-hit-on {
+  color: var(--color-primary-foreground);
+  background: var(--color-primary);
+  border-color: var(--color-accent);
+}
+
+.step-jump {
+  height: 1.75rem;
+  min-height: 1.75rem;
+  flex: 1;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-elevated);
+}
+
+.step-jump-done {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.step-jump-on {
+  background: var(--color-primary);
+  border-color: var(--color-accent);
 }
 
 .card {

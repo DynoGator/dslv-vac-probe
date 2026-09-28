@@ -15,8 +15,8 @@ function DoctrinePage() {
           <p className="kicker">§7 · firewall</p>
           <h1 className="text-2xl font-semibold">Kill switches</h1>
           <p className="mt-1 text-sm text-muted">
-            Instrument switches only. Supplements S1 and S2 are not part of the peer-review submission, and a
-            story about the vacuum is not a bound.
+            Four instrument switches: 1, 2, 3, and 6. Switches 4 and 5 are withdrawn with Supplements S1 and S2.
+            They are not calls in this book. A story about the vacuum is not a bound.
           </p>
         </header>
         <Plate
@@ -43,6 +43,9 @@ function DoctrinePage() {
             );
           })}
         </ul>
+        <p className="card p-4 text-sm text-muted">
+          Switches 4 and 5 from earlier drafts are not in this compilation. Numbering keeps Switch 6 so the field book and the repository do not fork.
+        </p>
 
         <section className="card space-y-3 p-4">
           <Tag tone="steel">[E] · [I] · [H]</Tag>
@@ -53,7 +56,7 @@ function DoctrinePage() {
               the Holometer’s optical null. Carrier phase scales as 1/f. Delay and range scale as 1/f².
             </li>
             <li>
-              <span className="text-foreground">[I]</span> Interpretive. Not required by the data. Supplement S1.
+              <span className="text-foreground">[I]</span> Interpretive. Not required by the data. Supplement S1 is withheld from this submission.
             </li>
             <li>
               <span className="text-foreground">[H]</span> This program’s hypothesis. Contingent. Kill-switched.
@@ -66,7 +69,7 @@ function DoctrinePage() {
           <Plate
             src={ART.companion}
             alt="Companion studies kept behind a closed laboratory door, the RF rack in front."
-            caption="Supplement S2. Gated separately. Aqueous, somatic, and Schumann work does not open or close Chain C."
+            caption="Supplements S1 and S2 are withheld. They do not open or close Chain S or Chain C."
           />
           <article className="card p-4">
             <h2 className="font-semibold">What this handset will not do</h2>
@@ -75,7 +78,9 @@ function DoctrinePage() {
               <li>Treat a GPS fix as carrier phase.</li>
               <li>Quote a Chain C bound tighter than the maximum of the co-located non-clock floor, the isolated relative-clock term, and the baseline atmospheric differential.</li>
               <li>Call a τ≈0 excess superluminal. Common-mode is not a channel.</li>
-              <li>Let Supplement S1’s ontology into the detection statistic.</li>
+              <li>Let withheld Supplement S1 ontology into the detection statistic.</li>
+              <li>Treat an E-field, barometer, or radon note as an estimator input.</li>
+              <li>Adjudicate withdrawn switches 4 or 5.</li>
               <li>Treat a handset hash as a pre-registration without an external anchor.</li>
             </ul>
           </article>
@@ -91,19 +96,15 @@ function DoctrinePage() {
           </p>
           <p className="mt-2">
             Sibling stack: the node software and the existing handset shell live in{" "}
-            <a className="text-primary underline" href="https://github.com/DynoGator/dslv-zpdi">
+            <a className="hit-link" href="https://github.com/DynoGator/dslv-zpdi">
               DynoGator/dslv-zpdi
             </a>
-            , package labs.dynogator.dslvzpdi. This record is the Rev 3.5 campaign book beside that
+            , package labs.dynogator.dslvzpdi. This record is the Rev 3.6 campaign book beside that
             array, not a second simulator.
           </p>
-          <p className="mt-2">
-            <a className="text-primary underline" href="/rev-3.5-white-paper.pdf">
-              Rev 3.5 white paper
-            </a>
-            {" · "}
-            <a className="text-primary underline" href="/rev-3.5-user-guide.pdf">
-              Rev 3.5 install and user guide
+          <p className="mt-3">
+            <a className="hit-link" href="/rev-3.6-submission.pdf">
+              Rev 3.6 submission packet
             </a>
           </p>
         </section>

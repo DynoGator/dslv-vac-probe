@@ -26,12 +26,12 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-grid min-h-dvh text-foreground">
-      <header className="shell-top sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur-sm">
+      <header className="shell-top sticky top-0 z-20 border-b border-border bg-background">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <img src="/favicon.svg" alt="" className="h-9 w-9 shrink-0" />
           <div className="min-w-0 flex-1">
-            <div className="kicker">DSLV-ZPDI</div>
-            <div className="truncate text-sm font-semibold">Probing the Vacuum Structure</div>
+            <div className="kicker">DSLV-ZPDI · Rev 3.6</div>
+            <div className="truncate text-base font-semibold">Upper bounds on carrier phase</div>
           </div>
           {campaigns.length > 0 && (
             <label className="sr-only" htmlFor="campaign-select">
@@ -55,8 +55,8 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="mx-auto w-full max-w-3xl px-4 pb-28 pt-4">{children}</main>
-      <nav className="shell-nav fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur-sm">
-        <ul className="mx-auto grid max-w-3xl grid-cols-5">
+      <nav className="shell-nav fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background">
+        <ul className="mx-auto grid max-w-3xl grid-cols-5 gap-1 px-2 py-1">
           {NAV.map((item) => {
             const on = item.to === "/" ? path === "/" : path.startsWith(item.to);
             const Icon = item.icon;
@@ -64,7 +64,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <li key={item.to}>
                 <Link
                   to={item.to}
-                  className={`flex min-h-14 flex-col items-center justify-center gap-1 text-xs ${on ? "text-primary" : "text-muted"}`}
+                  className={`nav-hit ${on ? "nav-hit-on" : ""}`}
                 >
                   <Icon size={18} aria-hidden />
                   {item.label}

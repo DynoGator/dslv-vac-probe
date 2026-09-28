@@ -16,7 +16,7 @@ import {
 } from "@/lib/metrology/physics";
 
 export const APP_ID = "DSLV-ZPDI-Probing-The-Vacuum-Structure";
-export const APP_REV = "3.5";
+export const APP_REV = "3.6";
 
 export function campaignFilename(name: string): string {
   const s = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -178,7 +178,9 @@ export function campaignMarkdown(c: Campaign): string {
   const lines: string[] = [];
   lines.push(`# ${c.name}`);
   lines.push("");
-  lines.push(`DSLV-ZPDI field book. White paper Rev 3.5 — upper bounds on anomalous distributed carrier-phase coherence.`);
+  lines.push(`DSLV-ZPDI field book. White paper Rev 3.6 — upper bounds on anomalous distributed carrier-phase coherence.`);
+  lines.push(`Instrument switches are 1, 2, 3, and 6. Switches 4 and 5 are withdrawn with Supplements S1 and S2.`);
+  lines.push(`Optional environmental covariates in the log are not estimator inputs.`);
   lines.push(`The vacuum-structure question motivates the program. It is not a claim of §§1–8.`);
   lines.push(`Operator: ${c.operator || "—"}`);
   lines.push(`Site: ${c.site || "—"}`);
@@ -265,7 +267,7 @@ export function campaignMarkdown(c: Campaign): string {
   lines.push(`Chain C predicted column as typed: ${c.fields.predictedC?.trim() || "∅"}`);
   lines.push(`Chain C measured residual floor: ${c.fields.measuredFloorC?.trim() || "∅"}`);
   lines.push(`Chain C reported bound: ${c.fields.reportedBoundC?.trim() || "∅"}`);
-  lines.push("Catalog rows are the worked example, not this campaign's measurement.");
+  lines.push("Catalog rows are the Rev 3.6 worked example. They do not imply a measured floor or a reported bound.");
   lines.push("");
   lines.push("## Budget rows");
   for (const row of c.budget) {

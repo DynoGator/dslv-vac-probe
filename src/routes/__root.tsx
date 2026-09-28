@@ -17,7 +17,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Field book for upper bounds on anomalous distributed carrier-phase coherence. DSLV-ZPDI Rev 3.5. GrapheneOS on Pixel 9 Pro XL.",
+          "Field book for upper bounds on anomalous distributed carrier-phase coherence. DSLV-ZPDI Rev 3.6. GrapheneOS on Pixel 9 Pro XL.",
       },
       { name: "theme-color", content: "#0a0c0f" },
       { name: "mobile-web-app-capable", content: "yes" },

@@ -39,7 +39,8 @@ export type LogKind =
   | "switch"
   | "freeze"
   | "amendment"
-  | "export";
+  | "export"
+  | "covariate";
 
 export type LogEntry = {
   id: string;
@@ -184,7 +185,7 @@ const LOCKED_WHEN_FROZEN = new Set(PREREG.map((f) => f.id));
 
 export function canonical(c: Campaign): string {
   const payload = {
-    rev: "3.5",
+    rev: "3.6",
     app: "DSLV-ZPDI-Probing-The-Vacuum-Structure",
     name: c.name,
     operator: c.operator,

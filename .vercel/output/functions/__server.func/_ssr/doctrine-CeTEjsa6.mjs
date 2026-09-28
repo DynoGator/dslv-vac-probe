@@ -1,6 +1,6 @@
 import { S as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
-import { c as Plate, d as SWITCHES, f as Shell, p as Tag, t as ART, z as useActive } from "./chrome-C6pvSZO-.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/doctrine-Q6GOofA2.js
+import { W as useActive, c as Plate, d as SWITCHES, f as Shell, p as Tag, t as ART } from "./chrome--h4omt2u.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/doctrine-CeTEjsa6.js
 var import_jsx_runtime = require_jsx_runtime();
 function DoctrinePage() {
 	const calls = useActive()?.logs.filter((l) => l.kind === "switch") ?? [];
@@ -18,7 +18,7 @@ function DoctrinePage() {
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 					className: "mt-1 text-sm text-muted",
-					children: "Instrument switches only. Nothing in the appendices is required to run the array, and a story about the vacuum is not a bound."
+					children: "Four instrument switches: 1, 2, 3, and 6. Switches 4 and 5 are withdrawn with Supplements S1 and S2. They are not calls in this book. A story about the vacuum is not a bound."
 				})
 			] }),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plate, {
@@ -62,6 +62,10 @@ function DoctrinePage() {
 					}, s.n);
 				})
 			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "card p-4 text-sm text-muted",
+				children: "Switches 4 and 5 from earlier drafts are not in this compilation. Numbering keeps Switch 6 so the field book and the repository do not fork."
+			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
 				className: "card space-y-3 p-4",
 				children: [
@@ -79,11 +83,11 @@ function DoctrinePage() {
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 								className: "text-foreground",
 								children: "[E]"
-							}), " Established result. GPS, IGS, the Beta law, the Holometer’s optical null, the ionospheric 1/f² delay."] }),
+							}), " Established result. GPS, IGS, the Beta law, the Holometer’s optical null. Carrier phase scales as 1/f. Delay and range scale as 1/f²."] }),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 								className: "text-foreground",
 								children: "[I]"
-							}), " Interpretive. Not required by the data. Appendix A."] }),
+							}), " Interpretive. Not required by the data. Supplement S1 is withheld from this submission."] }),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 								className: "text-foreground",
 								children: "[H]"
@@ -97,7 +101,7 @@ function DoctrinePage() {
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plate, {
 					src: ART.companion,
 					alt: "Companion studies kept behind a closed laboratory door, the RF rack in front.",
-					caption: "Appendix B. Gated separately. Aqueous, somatic, and Schumann work does not open or close Chain C."
+					caption: "Supplements S1 and S2 are withheld. They do not open or close Chain S or Chain C."
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
 					className: "card p-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
@@ -108,19 +112,42 @@ function DoctrinePage() {
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Invent a residual, a γ̂, or a lag." }),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Treat a GPS fix as carrier phase." }),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Quote a Chain C bound tighter than the common-clock floor you typed." }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Quote a Chain C bound tighter than the maximum of the co-located non-clock floor, the isolated relative-clock term, and the baseline atmospheric differential." }),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Call a τ≈0 excess superluminal. Common-mode is not a channel." }),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Let Appendix A’s ontology into the detection statistic." })
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Let withheld Supplement S1 ontology into the detection statistic." }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Treat an E-field, barometer, or radon note as an estimator input." }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Adjudicate withdrawn switches 4 or 5." }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Treat a handset hash as a pre-registration without an external anchor." })
 						]
 					})]
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
 				className: "card p-4 text-sm text-muted",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Prior art, so a reviewer does not have to reconstruct it: the Holometer is co-located optical strain (Chou et al., Phys. Rev. Lett. 117, 111102, 2016; arXiv:1611.08265). This program is RF carrier phase across geographic baselines. Clock-network dark-matter searches look for transients in frequency. This one looks for stationary phase coherence after geodetic subtraction. A bound here is a different channel." }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					className: "mt-2",
-					children: "Sibling stack: the node software and the existing handset shell live in DynoGator/dslv-zpdi, package labs.dynogator.dslvzpdi. This record is the Rev 3.4 campaign book beside that array, not a second simulator."
-				})]
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Prior art, so a reviewer does not have to reconstruct it: the Holometer is co-located optical strain (Chou et al., Phys. Rev. Lett. 117, 111102, 2016; arXiv:1611.08265). This program is RF carrier phase across geographic baselines. Clock-network dark-matter searches look for transients in frequency. This one looks for stationary phase coherence after geodetic subtraction. A bound here is a different channel." }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+						className: "mt-2",
+						children: [
+							"Sibling stack: the node software and the existing handset shell live in",
+							" ",
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+								className: "hit-link",
+								href: "https://github.com/DynoGator/dslv-zpdi",
+								children: "DynoGator/dslv-zpdi"
+							}),
+							", package labs.dynogator.dslvzpdi. This record is the Rev 3.6 campaign book beside that array, not a second simulator."
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-3",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+							className: "hit-link",
+							href: "/rev-3.6-submission.pdf",
+							children: "Rev 3.6 submission packet"
+						})
+					})
+				]
 			})
 		]
 	}) });

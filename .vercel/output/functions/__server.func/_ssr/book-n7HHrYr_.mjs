@@ -1,8 +1,8 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { J as require_react, S as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
-import { B as useBook, a as Field, f as Shell, o as NeedCampaign, p as Tag, z as useActive } from "./chrome-C6pvSZO-.mjs";
-import { n as download, t as campaignMarkdown } from "./report-1p7w2Tlt.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/book-c4Q72Ycj.js
+import { G as useBook, W as useActive, a as Field, f as Shell, o as NeedCampaign, p as Tag } from "./chrome--h4omt2u.mjs";
+import { n as campaignFilename, o as download, r as campaignMarkdown, t as APP_ID } from "./report-CdjHKgkz.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/book-n7HHrYr_.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function BookPage() {
@@ -46,8 +46,8 @@ function BookBody() {
 					className: "btn btn-ghost",
 					onClick: () => {
 						download(`dslv-zpdi-vacuum-book.json`, JSON.stringify({
-							app: "DSLV-ZPDI-Probing-The-Vacuum-Structure",
-							rev: "3.4",
+							app: APP_ID,
+							rev: "3.6",
 							campaigns
 						}, null, 2), "application/json");
 					},
@@ -96,25 +96,37 @@ function BookBody() {
 									c.createdAt
 								]
 							})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-								tone: c.frozen ? "ok" : "warn",
-								children: c.frozen ? "Frozen" : "Open"
+								tone: c.frozen?.anchorId.trim() ? "ok" : c.frozen ? "warn" : "steel",
+								children: c.frozen?.anchorId.trim() ? "Anchored" : c.frozen ? "Draft freeze" : "Open"
 							})]
 						}),
-						c.frozen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						c.frozen ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 							className: "break-all font-mono text-xs text-primary",
-							children: c.frozen.sha256
+							children: [c.frozen.sha256, c.frozen.anchorId.trim() ? ` · ${c.frozen.anchorKind} ${c.frozen.anchorId}` : " · no external anchor"]
 						}) : null,
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							className: "flex flex-wrap gap-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 								type: "button",
 								className: "btn btn-primary",
-								onClick: () => download(`${slug(c.name)}.json`, JSON.stringify(c, null, 2), "application/json"),
-								children: "Export this campaign"
+								onClick: () => {
+									addLog(c.id, {
+										kind: "export",
+										title: "Milestone export · campaign-close",
+										body: `campaign-close. SHA-256 ${c.frozen?.sha256 ?? "unfrozen"}. Anchor ${c.frozen?.anchorId.trim() || "∅"}.`
+									});
+									const next = useBook.getState().campaigns.find((x) => x.id === c.id) ?? c;
+									download(`${campaignFilename(next.name)}.json`, JSON.stringify({
+										app: APP_ID,
+										rev: "3.6",
+										campaign: next
+									}, null, 2), "application/json");
+								},
+								children: "Campaign-close export"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 								type: "button",
 								className: "btn btn-ghost",
-								onClick: () => download(`${slug(c.name)}.md`, campaignMarkdown(c), "text/markdown"),
+								onClick: () => download(`${campaignFilename(c.name)}.md`, campaignMarkdown(c), "text/markdown"),
 								children: "Markdown"
 							})]
 						})
@@ -125,29 +137,49 @@ function BookBody() {
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
 							className: "font-semibold",
-							children: "Field note"
+							children: "Housekeeping covariate"
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-sm text-muted",
+							children: "Optional E-field, barometer, or radon note. Logged beside the campaign. Not an estimator input, and not part of the detection statistic."
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
-							label: "Append only",
+							label: "What was observed, if you choose to record it",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
 								className: "field textarea",
 								value: note,
 								onChange: (e) => setNote(e.target.value)
 							})
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-							type: "button",
-							className: "btn btn-ghost",
-							disabled: !note.trim(),
-							onClick: () => {
-								addLog(c.id, {
-									kind: "note",
-									title: "Field note",
-									body: note.trim()
-								});
-								setNote("");
-							},
-							children: "Append note"
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex flex-wrap gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: "btn btn-ghost",
+								disabled: !note.trim(),
+								onClick: () => {
+									addLog(c.id, {
+										kind: "covariate",
+										title: "Covariate — not an estimator input",
+										body: note.trim()
+									});
+									setNote("");
+								},
+								children: "Append covariate"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: "btn btn-ghost",
+								disabled: !note.trim(),
+								onClick: () => {
+									addLog(c.id, {
+										kind: "note",
+										title: "Field note",
+										body: note.trim()
+									});
+									setNote("");
+								},
+								children: "Append note"
+							})]
 						})
 					]
 				}),
@@ -218,9 +250,6 @@ function BookBody() {
 			] })
 		]
 	});
-}
-function slug(name) {
-	return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "campaign";
 }
 //#endregion
 export { BookPage as component };

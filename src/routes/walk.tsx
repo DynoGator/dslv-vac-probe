@@ -88,7 +88,7 @@ function WalkBody() {
             key={s.id}
             type="button"
             aria-label={s.title}
-            className={`h-1.5 flex-1 rounded-full ${i === index ? "bg-primary" : i < index ? "bg-accent" : "bg-border"}`}
+            className={`step-jump ${i === index ? "step-jump-on" : i < index ? "step-jump-done" : ""}`}
             onClick={() => setStep(c.id, s.id)}
           />
         ))}
@@ -894,8 +894,6 @@ function SwitchStep() {
           <option value="1">1 Array residual</option>
           <option value="2">2 Chromaticity</option>
           <option value="3">3 Pipeline</option>
-          <option value="4">4 Möbius holonomy</option>
-          <option value="5">5 Gravitating plenum</option>
           <option value="6">6 Simultaneity</option>
         </select>
       </Field>
@@ -923,6 +921,10 @@ function SwitchStep() {
         onClick={() => {
           if (n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b")) {
             setMsg("Switch 2 cannot fire without an Analysis A or Analysis B entry, and it cannot fire on a null.");
+            return;
+          }
+          if (n === "4" || n === "5") {
+            setMsg("Switches 4 and 5 are withdrawn with Supplements S1 and S2. They are not instrument calls.");
             return;
           }
           if (n === "2" && status === "candidate-passed" && !c.logs.some((l) => l.kind === "chromatic")) {

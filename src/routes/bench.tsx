@@ -51,7 +51,7 @@ function BenchPage() {
           <h1 className="text-2xl font-semibold">Bench</h1>
           <p className="mt-1 text-sm text-muted">
             Every number on this page is an evaluation of a formula, or a row you typed. Placeholders
-            are the Rev 3.5 worked example. They are not measurements, and they are not written into
+            are the Rev 3.6 worked example. They are not measurements, and they are not written into
             the book unless you are on the walk.
           </p>
         </header>
@@ -190,7 +190,7 @@ function Weak() {
   const [r, setR] = useState("");
   const w = num(sig) != null && num(r) != null ? weakPhase(num(sig)!, num(r)!) : null;
   return (
-    <Tool title="Weak common phase" section="§5" hint="Rev 3.5 uses σ_φ = 0.42 rad. The paper reports φ ≈ σ √r. Exact inversion is beside it.">
+    <Tool title="Weak common phase" section="§5" hint="Rev 3.6 uses σ_φ = 0.42 rad. The paper reports φ ≈ σ √r. Exact inversion is beside it. The millimetre map is not an estimator.">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="σ_φ (rad)">
           <input className="field font-mono" value={sig} placeholder="0.42" onChange={(e) => setSig(e.target.value)} />
@@ -407,7 +407,7 @@ function BudgetTool() {
 function Identity() {
   const rows = paperIdentityChecks();
   return (
-    <Tool title="Identity against Rev 3.5" section="Self-check" hint="If a row fails, the app is wrong. Do not interpret it as a residual.">
+    <Tool title="Identity against Rev 3.6" section="Self-check" hint="If a row fails, the app is wrong. Do not interpret it as a residual.">
       <ul className="space-y-2">
         {rows.map((r) => (
           <li key={r.id} className="flex items-start justify-between gap-3 border-b border-border pb-2 text-sm">

@@ -1,8 +1,9 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { J as require_react, S as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
-import { A as num, B as useBook, C as haversineM, D as lightTimeS, E as lEff, F as rowRad, I as rss, L as sci, M as paperIdentityChecks, N as phaseToPathM, R as sigmaPhiRad, S as formatSeconds, T as ionoPhaseRad, V as weakPhase, a as Field, b as formatBaseline, f as Shell, g as chromatic, h as betaNull, i as F_RATIO, j as nyquistHz, l as Readout, m as baselineForLags, n as F_L1_HZ, p as Tag, r as F_L5_HZ, x as formatRad, y as dumpPhaseSigma, z as useActive } from "./chrome-C6pvSZO-.mjs";
+import { A as lightTimeS, B as rowRad, C as formatBaseline, E as haversineM, F as paperIdentityChecks, G as useBook, H as sci, I as phaseToPathM, K as weakPhase, N as num, O as ionoPhaseRad, P as nyquistHz, S as dumpPhaseSigma, T as formatSeconds, U as sigmaPhiRad, W as useActive, _ as chromatic, a as Field, f as Shell, h as betaNull, i as F_RATIO, k as lEff, l as Readout, m as baselineForLags, n as F_L1_HZ, p as Tag, r as F_L5_HZ, w as formatRad } from "./chrome--h4omt2u.mjs";
+import { a as chainSSpan, i as chainCQuote } from "./report-CdjHKgkz.mjs";
 import { a as CartesianGrid, i as Line, n as YAxis, o as ResponsiveContainer, r as XAxis, s as Tooltip, t as LineChart } from "../_libs/recharts+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/bench-C32KVAMY.js
+//#region node_modules/.nitro/vite/services/ssr/assets/bench-7JzbGANg.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function pathLabel(m) {
@@ -26,7 +27,7 @@ function BenchPage() {
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 					className: "mt-1 text-sm text-muted",
-					children: "Every number on this page is an evaluation of a formula, or a row you typed. Placeholders are the Rev 3.4 worked example. They are not measurements, and they are not written into the book unless you are on the walk."
+					children: "Every number on this page is an evaluation of a formula, or a row you typed. Placeholders are the Rev 3.6 worked example. They are not measurements, and they are not written into the book unless you are on the walk."
 				})
 			] }),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Adev, {}),
@@ -287,7 +288,7 @@ function Weak() {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tool, {
 		title: "Weak common phase",
 		section: "§5",
-		hint: "The paper reports φ ≈ σ √r. Exact inversion is beside it.",
+		hint: "Rev 3.6 uses σ_φ = 0.42 rad. The paper reports φ ≈ σ √r. Exact inversion is beside it. The millimetre map is not an estimator.",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "grid gap-3 sm:grid-cols-2",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
@@ -295,7 +296,7 @@ function Weak() {
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 					className: "field font-mono",
 					value: sig,
-					placeholder: "0.3",
+					placeholder: "0.42",
 					onChange: (e) => setSig(e.target.value)
 				})
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
@@ -329,7 +330,7 @@ function Chroma() {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tool, {
 		title: "Chromatic class",
 		section: "Switch 2",
-		hint: `Targets: delay ${sci(F_RATIO, 4)}, ionosphere ${sci(1 / F_RATIO, 4)}, offset 1.`,
+		hint: `Targets: delay ${sci(F_RATIO, 4)}, ionosphere ${sci(1 / F_RATIO, 4)}, offset 1. A delay-class pass is necessary, not sufficient.`,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "grid gap-3 sm:grid-cols-3",
 			children: [
@@ -374,7 +375,7 @@ function Iono() {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tool, {
 		title: "Ionospheric carrier phase",
 		section: "§3",
-		hint: "0.1 TECU is the paper's optimistic single-frequency residual, not a forecast.",
+		hint: "Phase in radians scales as 1/f. Delay and range scale as 1/f². 0.1 TECU is ≈8.4 rad at 100 MHz and ≈0.53 rad at L1, a factor of ≈15.75, not its square. Not a forecast.",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 			label: "TEC (TECU)",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
@@ -391,7 +392,7 @@ function Iono() {
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
 				label: "100 MHz",
 				value: t == null ? "—" : formatRad(ionoPhaseRad(t, 1e8)),
-				hint: "Why the science band is L-band."
+				hint: t == null || ionoPhaseRad(t, 157542e4) === 0 ? "Factor withheld." : `100 MHz / L1 = ${(ionoPhaseRad(t, 1e8) / ionoPhaseRad(t, F_L1_HZ)).toFixed(2)}. Not squared.`
 			})]
 		})]
 	});
@@ -561,101 +562,97 @@ function BudgetTool() {
 			children: "Open a campaign to edit budget rows. Catalog defaults appear with the record, labeled catalog."
 		})
 	});
-	const lows = [];
-	const highs = [];
-	for (const row of c.budget) {
-		if (row.name.startsWith("Multipath")) continue;
-		if (!row.rss) continue;
-		const rad = rowRad(row);
-		if (rad == null) continue;
-		lows.push(rad);
-		highs.push(rad);
-	}
-	const mpLo = c.budget.find((r) => r.name.includes("low"));
-	const mpHi = c.budget.find((r) => r.name.includes("high"));
-	const lo = mpLo ? rowRad(mpLo) : null;
-	const hi = mpHi ? rowRad(mpHi) : null;
-	if (lo != null) lows.push(lo);
-	if (hi != null) highs.push(hi);
+	const span = chainSSpan(c);
+	const quote = chainCQuote(c);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tool, {
 		title: "Chain S differential floor",
 		section: "§5",
-		hint: "RSS of included rows, with the low and high multipath cases shown as a span. Chain C is not this number.",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "grid gap-3 sm:grid-cols-2",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
-				label: "RSS, multipath low",
-				value: formatRad(lows.length ? rss(lows) : null)
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
-				label: "RSS, multipath high",
-				value: formatRad(highs.length ? rss(highs) : null)
-			})]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
-			className: "space-y-3",
-			children: c.budget.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
-				className: "rounded-md border border-border p-3",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "flex items-center justify-between gap-2",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "text-sm font-semibold",
-							children: row.name
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-							tone: row.basis === "measured" ? "ok" : "warn",
-							children: row.basis
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						className: "mt-1 text-xs text-muted",
-						children: row.note
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "mt-2 grid gap-2 sm:grid-cols-3",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-								className: "field font-mono",
-								disabled: !!c.frozen,
-								value: row.value,
-								onChange: (e) => update(c.id, row.id, { value: e.target.value })
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
-								className: "select",
-								disabled: !!c.frozen,
-								value: row.basis,
-								onChange: (e) => update(c.id, row.id, { basis: e.target.value }),
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
-									value: "catalog",
-									children: "catalog"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
-									value: "measured",
-									children: "measured"
-								})]
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-								className: "flex items-center gap-2 text-sm",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-									type: "checkbox",
-									className: "h-5 w-5",
-									disabled: !!c.frozen || row.name.startsWith("Multipath"),
-									checked: row.name.startsWith("Multipath") ? false : row.rss,
-									onChange: (e) => update(c.id, row.id, { rss: e.target.checked })
-								}), "In the shared RSS"]
-							})
-						]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-						className: "tabular mt-1 font-mono text-xs text-muted",
-						children: [formatRad(rowRad(row)), " at L1"]
-					})
-				]
-			}, row.id))
-		})]
+		hint: "Single-difference RSS, then ×√2 for the Chain S double-difference floor. Chain C is the per-baseline maximum, not this RSS. Catalog rows stay labeled until replaced.",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "grid gap-3 sm:grid-cols-2",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
+					label: "Single-difference RSS",
+					value: span.sdLo == null ? "—" : `${formatRad(span.sdLo)} – ${formatRad(span.sdHi)}`,
+					hint: span.catalog ? "Includes catalog rows." : "Measured rows only."
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
+					label: "Double-difference floor",
+					value: span.ddLo == null ? "—" : `${formatRad(span.ddLo)} – ${formatRad(span.ddHi)}`,
+					hint: "√2 times the single difference. Paper span is about 0.4–1.1 rad."
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
+				label: "Chain C maximum",
+				value: quote.failed ? "not quotable" : quote.boundHi == null ? "needs the co-located floor" : `${formatRad(quote.boundLo)} – ${formatRad(quote.boundHi)}`,
+				hint: "Max of co-located non-clock floor, isolated clock, and troposphere-plus-multipath. Not the double-difference floor."
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+				className: "space-y-3",
+				children: c.budget.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+					className: "rounded-md border border-border p-3",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center justify-between gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "text-sm font-semibold",
+								children: row.name
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
+								tone: row.basis === "measured" ? "ok" : "warn",
+								children: row.basis
+							})]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "mt-1 text-xs text-muted",
+							children: row.note
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "mt-2 grid gap-2 sm:grid-cols-3",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+									className: "field font-mono",
+									disabled: !!c.frozen,
+									value: row.value,
+									onChange: (e) => update(c.id, row.id, { value: e.target.value })
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
+									className: "select",
+									disabled: !!c.frozen,
+									value: row.basis,
+									onChange: (e) => update(c.id, row.id, { basis: e.target.value }),
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+										value: "catalog",
+										children: "catalog"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+										value: "measured",
+										children: "measured"
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+									className: "flex items-center gap-2 text-sm",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+										type: "checkbox",
+										className: "h-5 w-5",
+										disabled: !!c.frozen || row.name.startsWith("Multipath"),
+										checked: row.name.startsWith("Multipath") ? false : row.rss,
+										onChange: (e) => update(c.id, row.id, { rss: e.target.checked })
+									}), "In the shared RSS"]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+							className: "tabular mt-1 font-mono text-xs text-muted",
+							children: [formatRad(rowRad(row)), " at L1"]
+						})
+					]
+				}, row.id))
+			})
+		]
 	});
 }
 function Identity() {
 	const rows = paperIdentityChecks();
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tool, {
-		title: "Identity against Rev 3.4",
+		title: "Identity against Rev 3.6",
 		section: "Self-check",
 		hint: "If a row fails, the app is wrong. Do not interpret it as a residual.",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {

@@ -1,8 +1,8 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { J as require_react, S as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
-import { A as num, B as useBook, E as lEff, L as sci, O as morphology, P as preregComplete, R as sigmaPhiRad, S as formatSeconds, _ as clockIsolation, a as Field, b as formatBaseline, c as Plate, f as Shell, g as chromatic, h as betaNull, k as nodesReady, l as Readout, n as F_L1_HZ, o as NeedCampaign, p as Tag, s as PREREG, u as STEPS, v as clockReady, x as formatRad, z as useActive } from "./chrome-C6pvSZO-.mjs";
-import { r as pairsOf } from "./report-1p7w2Tlt.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/walk-YX24423Y.js
+import { C as formatBaseline, G as useBook, H as sci, L as preregComplete, M as nodesReady, N as num, R as registryAnchored, T as formatSeconds, U as sigmaPhiRad, W as useActive, _ as chromatic, a as Field, b as detectionReady, c as Plate, f as Shell, h as betaNull, j as morphology, k as lEff, l as Readout, n as F_L1_HZ, o as NeedCampaign, p as Tag, s as PREREG, u as STEPS, v as clockIsolation, w as formatRad, y as clockReady, z as registryExported } from "./chrome--h4omt2u.mjs";
+import { i as chainCQuote, n as campaignFilename, o as download, r as campaignMarkdown, s as pairsOf, t as APP_ID } from "./report-CdjHKgkz.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/walk-B31Seez9.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function WalkPage() {
@@ -10,13 +10,18 @@ function WalkPage() {
 }
 function gate(stepId, c) {
 	if (stepId === "hypotheses" || stepId === "path" || stepId === "resolution") return c.acked.includes(stepId) ? null : "Acknowledge the step before leaving it.";
-	if (stepId === "nodes") return nodesReady(c) ? null : "Two nodes, each with a name, GPSDO identity, σ_y, and f_loop.";
-	if (stepId === "prereg") return preregComplete(c) ? null : "The registry fields above the clock floor are still blank.";
+	if (stepId === "nodes") return nodesReady(c) ? null : "Two identified nodes for Phase 0. Each needs a name, GPSDO, σ_y, and f_loop. Four nodes are required before a detection claim.";
+	if (stepId === "prereg") return preregComplete(c) ? null : "The registry fields above the clock floor and bias hash are still blank.";
 	if (stepId === "clock") return clockReady(c) ? null : "Enter the measured non-clock floor and the bias-file hash.";
-	if (stepId === "inject") return c.logs.some((l) => l.kind === "injection") ? null : "Log an injection — recovered, failed, or still sealed.";
-	if (stepId === "freeze") return c.frozen ? null : "Freeze the registry before science entries.";
+	if (stepId === "inject") return c.logs.some((l) => l.kind === "injection") ? null : "Log an injection — recovered, missed, or still sealed.";
+	if (stepId === "freeze") {
+		if (!c.frozen) return "Hash the registry. A missing digest is not a pre-registration.";
+		if (!registryAnchored(c)) return "Record the external anchor ID beside the digest. A handset stamp alone is a draft.";
+		if (!registryExported(c)) return "Export the campaign JSON after the anchor ID is recorded.";
+		return null;
+	}
 	if (stepId === "analysis-a" || stepId === "analysis-b" || stepId === "chromatic" || stepId === "switches") {
-		if (!c.frozen) return "Freeze first. Science entries wait on the hash.";
+		if (!registryAnchored(c)) return "Science waits on a frozen registry and an external anchor. Without the anchor this is a draft.";
 		return c.acked.includes(stepId) ? null : "Acknowledge the step. An empty log is allowed. A silent skip is not.";
 	}
 	return null;
@@ -45,8 +50,8 @@ function WalkBody() {
 						step.section
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-					tone: c.frozen ? "ok" : "steel",
-					children: c.frozen ? "Registry frozen" : "Registry open"
+					tone: registryAnchored(c) ? "ok" : c.frozen ? "warn" : "steel",
+					children: registryAnchored(c) ? "Anchored" : c.frozen ? "Draft freeze" : "Registry open"
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -54,7 +59,7 @@ function WalkBody() {
 				children: STEPS.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 					type: "button",
 					"aria-label": s.title,
-					className: `h-1.5 flex-1 rounded-full ${i === index ? "bg-primary" : i < index ? "bg-accent" : "bg-border"}`,
+					className: `step-jump ${i === index ? "step-jump-on" : i < index ? "step-jump-done" : ""}`,
 					onClick: () => setStep(c.id, s.id)
 				}, s.id))
 			}),
@@ -113,7 +118,7 @@ function StepPanel() {
 		case "clock": return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClockStep, {});
 		case "inject": return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InjectStep, {});
 		case "freeze": return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FreezeStep, {});
-		case "release": return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReleaseHint, {});
+		case "release": return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReleaseStep, {});
 		default: return null;
 	}
 }
@@ -308,6 +313,15 @@ function Nodes() {
 				className: "text-sm text-hot",
 				children: err
 			}) : null,
+			c.nodes.length > 0 && c.nodes.length < 4 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+				className: "text-sm text-warn",
+				children: [
+					c.nodes.length,
+					" node",
+					c.nodes.length === 1 ? "" : "s",
+					". Phase 0 can validate one pair. Detection-grade Analysis A needs four nodes and two disjoint pairs."
+				]
+			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: "btn btn-primary w-full",
@@ -332,7 +346,12 @@ function Prereg() {
 				"holdout",
 				"slideCount",
 				"gkm",
-				"fdr"
+				"fdr",
+				"namedInputs",
+				"wipeoff",
+				"phase0",
+				"calibTransfer",
+				"blindCount"
 			].includes(f.id);
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 				label: f.label,
@@ -363,6 +382,21 @@ function Prereg() {
 		}) : null]
 	});
 }
+function exportMilestone(c, milestone) {
+	const digest = c.frozen?.sha256 ?? "unfrozen";
+	const anchor = c.frozen?.anchorId.trim() ?? "";
+	useBook.getState().addLog(c.id, {
+		kind: "export",
+		title: `Milestone export · ${milestone}`,
+		body: `${milestone}. SHA-256 ${digest}. Anchor ${anchor || "∅"}.`
+	});
+	const next = useBook.getState().campaigns.find((x) => x.id === c.id) ?? c;
+	download(`${campaignFilename(next.name)}.json`, JSON.stringify({
+		app: APP_ID,
+		rev: "3.6",
+		campaign: next
+	}, null, 2), "application/json");
+}
 function ClockStep() {
 	const c = useActive();
 	const setField = useBook((s) => s.setField);
@@ -370,6 +404,7 @@ function ClockStep() {
 	const common = num(c.fields.clockFloorRad);
 	const indep = num(c.fields.indepClockRms ?? "");
 	const iso = common != null && indep != null ? clockIsolation(common, indep) : null;
+	const quote = chainCQuote(c);
 	const [note, setNote] = (0, import_react.useState)("");
 	const [msg, setMsg] = (0, import_react.useState)("");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -377,7 +412,7 @@ function ClockStep() {
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 				label: "Common-clock residual RMS (rad)",
-				hint: "The non-clock floor. This number sets the Chain C bound.",
+				hint: "Co-located non-clock floor for this hardware and site. One term of the Chain C maximum.",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 					className: "field font-mono",
 					disabled: !!c.frozen,
@@ -388,7 +423,7 @@ function ClockStep() {
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 				label: "Independent-clock co-located RMS (rad)",
-				hint: "Site-common plus relative clock. Not a second hypothesis.",
+				hint: "Site-common plus relative clock. Blank stays blank. A noisier common-clock run is Switch 3.",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 					className: "field font-mono",
 					disabled: !!c.frozen,
@@ -409,13 +444,21 @@ function ClockStep() {
 				className: "grid gap-3 sm:grid-cols-2",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
 					label: "Isolated clock term",
-					value: iso == null ? "—" : formatRad(iso),
-					hint: "√(σ²_indep − σ²_common). Blank if the common-clock run is noisier — that fails the decomposition and routes to Switch 3."
+					value: common != null && indep != null && iso == null ? "failed" : formatRad(iso),
+					hint: "√(σ²_indep − σ²_common). Failed means the common-clock run is noisier. Do not quote a Chain C bound."
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
-					label: "Chain C bound",
-					value: common == null ? "unbounded" : formatRad(common),
-					hint: "No tighter number is allowed."
+					label: "Chain C maximum",
+					value: quote.failed ? "not quotable" : quote.boundHi == null ? "unbounded" : `${formatRad(quote.boundLo)} – ${formatRad(quote.boundHi)}`,
+					hint: "Max of the co-located floor, the isolated clock, and the troposphere-plus-multipath single difference. Catalog atmosphere stays labeled until replaced. Never quote tighter."
 				})]
+			}),
+			indep == null ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-sm text-warn",
+				children: "Independent-clock RMS is blank. The maximum omits the isolated clock term until you enter it."
+			}) : null,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-sm text-muted",
+				children: "The run measures front-end and splitter phase, inter-channel bias, thermal drift in the calibration environment, and co-located multipath. It does not reproduce far-site troposphere, far-site multipath, or independent GPSDO drift. Add repeat-run drift in quadrature. A spot check outside the frozen tolerance is Switch 3."
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 				label: "What the run actually did",
@@ -437,13 +480,14 @@ function ClockStep() {
 					addLog(c.id, {
 						kind: "calibration",
 						chain: "C",
-						title: iso == null ? "Common-clock run — decomposition failed" : "Common-clock calibration",
-						body: `${note || "No narrative."} Floor ${common} rad. Independent ${indep ?? "∅"}. Isolation ${iso ?? "failed"}. Bias ${c.fields.biasHash || "∅"}.`
+						title: iso == null && indep != null ? "Common-clock run — decomposition failed" : "Common-clock calibration",
+						body: `${note || "No narrative."} Floor ${common} rad. Independent ${indep ?? "∅"}. Isolation ${iso ?? "failed"}. Bias ${c.fields.biasHash || "∅"}. Chain C maximum ${quote.failed ? "not quotable" : quote.boundHi == null ? "unbounded" : quote.boundHi + " rad"}.`
 					});
 					setNote("");
-					setMsg("Calibration appended to the book.");
+					exportMilestone(c, "calibration-append");
+					setMsg("Calibration appended. Campaign JSON download started. Move it off the handset.");
 				},
-				children: "Append the calibration"
+				children: "Append the calibration and export JSON"
 			}),
 			msg ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 				className: "text-sm text-muted",
@@ -603,7 +647,10 @@ function FreezeStep() {
 	const c = useActive();
 	const freeze = useBook((s) => s.freeze);
 	const amend = useBook((s) => s.amend);
+	const setAnchor = useBook((s) => s.setAnchor);
 	const [reason, setReason] = (0, import_react.useState)("");
+	const [kind, setKind] = (0, import_react.useState)("osf");
+	const [anchorId, setAnchorId] = (0, import_react.useState)("");
 	const [msg, setMsg] = (0, import_react.useState)("");
 	const ready = preregComplete(c) && nodesReady(c) && clockReady(c);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -623,6 +670,18 @@ function FreezeStep() {
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Li, {
 						ok: clockReady(c),
 						text: "Common-clock floor and bias hash"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Li, {
+						ok: !!c.frozen,
+						text: "SHA-256 of the canonical registry"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Li, {
+						ok: registryAnchored(c),
+						text: "External anchor ID, stored beside the digest"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Li, {
+						ok: registryExported(c),
+						text: "JSON exported after that anchor"
 					})
 				]
 			}),
@@ -633,7 +692,85 @@ function FreezeStep() {
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 					className: "text-xs text-muted",
-					children: ["Frozen ", c.frozen.at]
+					children: [
+						"Handset stamp ",
+						c.frozen.at,
+						". Self-attested until an external anchor exists."
+					]
+				}),
+				c.frozen.anchorId ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+					className: "text-sm",
+					children: [
+						"Anchor ",
+						c.frozen.anchorKind || "unspecified",
+						": ",
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "break-all font-mono",
+							children: c.frozen.anchorId
+						})
+					]
+				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "text-sm text-warn",
+					children: "No external anchor. This freeze is a draft, not a pre-registration."
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
+					label: "Anchor kind",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
+						className: "select",
+						value: kind,
+						onChange: (e) => setKind(e.target.value),
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+								value: "osf",
+								children: "OSF preregistration"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+								value: "git",
+								children: "Signed git tag in DynoGator/dslv-zpdi"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+								value: "ots",
+								children: "OpenTimestamps"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+								value: "rfc3161",
+								children: "RFC-3161 timestamp"
+							})
+						]
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
+					label: "Anchor transaction ID",
+					hint: "Paste the OSF, git, or timestamp ID. Do not invent one. It is not hashed into the digest.",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+						className: "field font-mono",
+						value: anchorId,
+						onChange: (e) => setAnchorId(e.target.value),
+						placeholder: "transaction id"
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					className: "btn btn-primary w-full",
+					disabled: !anchorId.trim(),
+					onClick: () => {
+						const ok = setAnchor(c.id, kind, anchorId);
+						setMsg(ok ? "Anchor recorded beside the digest. Export the JSON before science entries." : "Anchor refused.");
+						if (ok) setAnchorId("");
+					},
+					children: "Record the anchor ID"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					className: "btn btn-ghost w-full",
+					disabled: !registryAnchored(c),
+					onClick: () => {
+						const current = useBook.getState().campaigns.find((x) => x.id === c.id);
+						if (!current) return;
+						exportMilestone(current, "registry-freeze");
+						setMsg("Campaign JSON download started. Move it off the handset.");
+					},
+					children: "Export JSON"
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 					label: "Amendment reason",
@@ -650,7 +787,7 @@ function FreezeStep() {
 					onClick: () => {
 						amend(c.id, reason);
 						setReason("");
-						setMsg("Lock cleared. The previous digest stays in the book.");
+						setMsg("Lock cleared. The previous digest stays in the book. Re-freeze, anchor again, and export before science entries.");
 					},
 					children: "Amend and unlock"
 				})
@@ -660,7 +797,7 @@ function FreezeStep() {
 				disabled: !ready,
 				onClick: async () => {
 					const digest = await freeze(c.id);
-					setMsg(digest ? `Frozen ${digest.slice(0, 16)}…` : "Freeze refused. A required field is empty.");
+					setMsg(digest ? `Frozen ${digest.slice(0, 16)}… Anchor it, then export. The handset time is not the pre-registration.` : "Freeze refused. A required field is empty.");
 				},
 				children: "Freeze and hash"
 			}),
@@ -704,14 +841,23 @@ function AnalysisA() {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "card space-y-3 p-4",
 		children: [
-			!c.frozen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+			!registryAnchored(c) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 				className: "text-sm text-warn",
-				children: "You can draft the arithmetic. The log waits until the registry is frozen."
+				children: "You can draft the arithmetic. The log waits until the registry is frozen and externally anchored."
+			}) : null,
+			!detectionReady(c) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-sm text-warn",
+				children: "Fewer than four nodes. This step can record a Phase 0 floor. It cannot record a detection."
 			}) : null,
 			!c.logs.some((l) => l.kind === "injection" && l.title.includes("recovered")) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 				className: "text-sm text-warn",
 				children: "No recovered injection is in the book. Switch 3 is live for any claim."
 			}) : null,
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Readout, {
+				label: "Named inputs",
+				value: c.fields.namedInputs?.trim() ? "in the registry" : "blank",
+				hint: c.fields.namedInputs?.trim() || "Chain S needs two disjoint double-difference series. Chain C needs two disjoint same-satellite inter-node series."
+			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
 				label: "Chain",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
@@ -801,13 +947,17 @@ function AnalysisA() {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: "btn btn-primary w-full",
-				disabled: !c.frozen,
+				disabled: !registryAnchored(c),
 				onClick: () => {
+					if (call === "excess-hold" && !detectionReady(c)) {
+						setMsg("Detection refused. Four nodes and two disjoint pairs are the minimum. Log a floor or no-measurement.");
+						return;
+					}
 					addLog(c.id, {
 						kind: "analysis-a",
 						chain,
 						title: `Analysis A · Chain ${chain} · ${call}`,
-						body: `γ̂ ${gamma || "∅"}. T ${tDur || "∅"} s. τ_corr ${tau || "∅"} s. L_eff ${L ?? "∅"}. E[γ] ${law ? law.eGamma : "∅"}.`
+						body: `Named inputs: ${c.fields.namedInputs?.trim() || "∅"}. γ̂ ${gamma || "∅"}. T ${tDur || "∅"} s. τ_corr ${tau || "∅"} s. L_eff ${L ?? "∅"}. E[γ] ${law ? law.eGamma : "∅"}. Phase ${detectionReady(c) ? "detection-grade roster" : "Phase 0"}.`
 					});
 					setMsg("Analysis A appended. The residual itself was not generated here.");
 				},
@@ -951,7 +1101,7 @@ function AnalysisB() {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: "btn btn-primary w-full",
-				disabled: !c.frozen || !result,
+				disabled: !registryAnchored(c) || !result,
 				onClick: () => {
 					if (!result || !chosen) return;
 					addLog(c.id, {
@@ -979,7 +1129,7 @@ function ChromaticStep() {
 	const [msg, setMsg] = (0, import_react.useState)("");
 	const tol = num(c.fields.switch2tol) ?? .05;
 	const hit = num(p1) != null && num(p2) != null ? chromatic(num(p1), num(p2), tol) : null;
-	const label = hit?.klass === "delay" ? "Delay class — candidate may proceed" : hit?.klass === "iono" ? "Ionospheric class — back to the null" : hit?.klass === "offset" ? "Phase-offset class — instrumental" : hit ? "No class inside tolerance" : "—";
+	const label = hit?.klass === "delay" ? "Delay class — necessary, not sufficient. Troposphere, multipath, and clock are also delay-class." : hit?.klass === "iono" ? "Ionospheric class — back to the null" : hit?.klass === "offset" ? "Phase-offset class — instrumental" : hit ? "No class inside tolerance" : "—";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "card space-y-3 p-4",
 		children: [
@@ -988,7 +1138,7 @@ function ChromaticStep() {
 				children: [
 					"Tolerance from the registry: ",
 					sci(tol),
-					". Uncombined radians or cycles."
+					". Uncombined radians or cycles, both the same unit. A delay-class pass rejects ionosphere and a digital artifact. It is not evidence of anomalous coherence. Switch 2 cannot fire on a null."
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -1017,9 +1167,15 @@ function ChromaticStep() {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: "btn btn-primary w-full",
-				disabled: !c.frozen || !hit,
+				disabled: !registryAnchored(c) || !hit,
 				onClick: () => {
 					if (!hit) return;
+					const a = num(p1);
+					const b = num(p2);
+					if (a != null && b != null && Math.abs(a) < 1e-4 && Math.abs(b) < 1e-4) {
+						setMsg("Switch 2 cannot fire on a null. Both entries are consistent with zero.");
+						return;
+					}
 					addLog(c.id, {
 						kind: "chromatic",
 						title: `Switch 2 · ${hit.klass}`,
@@ -1042,6 +1198,7 @@ function SwitchStep() {
 	const [n, setN] = (0, import_react.useState)("1");
 	const [status, setStatus] = (0, import_react.useState)("null-holds");
 	const [note, setNote] = (0, import_react.useState)("");
+	const [spot, setSpot] = (0, import_react.useState)(false);
 	const [msg, setMsg] = (0, import_react.useState)("");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "card space-y-3 p-4",
@@ -1064,14 +1221,6 @@ function SwitchStep() {
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
 							value: "3",
 							children: "3 Pipeline"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
-							value: "4",
-							children: "4 Möbius holonomy"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
-							value: "5",
-							children: "5 Gravitating plenum"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
 							value: "6",
@@ -1114,13 +1263,34 @@ function SwitchStep() {
 					onChange: (e) => setNote(e.target.value)
 				})
 			}),
+			n === "6" && status === "candidate-passed" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+				className: "flex items-start gap-2 text-sm",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+					type: "checkbox",
+					className: "mt-1 h-5 w-5",
+					checked: spot,
+					onChange: (e) => setSpot(e.target.checked)
+				}), "The excess survived a common-clock spot-check substitution. If it did not, Switch 6 has fired."]
+			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: "btn btn-primary w-full",
-				disabled: !c.frozen || n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b"),
+				disabled: !registryAnchored(c) || n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b"),
 				onClick: () => {
+					if (n === "2" && status === "fired" && !c.logs.some((l) => l.kind === "analysis-a" || l.kind === "analysis-b")) {
+						setMsg("Switch 2 cannot fire without an Analysis A or Analysis B entry, and it cannot fire on a null.");
+						return;
+					}
+					if (n === "4" || n === "5") {
+						setMsg("Switches 4 and 5 are withdrawn with Supplements S1 and S2. They are not instrument calls.");
+						return;
+					}
 					if (n === "2" && status === "candidate-passed" && !c.logs.some((l) => l.kind === "chromatic")) {
 						setMsg("Switch 2 cannot pass without an uncombined L1/L5 entry.");
+						return;
+					}
+					if (n === "6" && status === "candidate-passed" && !spot) {
+						setMsg("Switch 6 does not pass unless the excess survived a common-clock spot-check. Record Fired if it moved.");
 						return;
 					}
 					addLog(c.id, {
@@ -1140,10 +1310,74 @@ function SwitchStep() {
 		]
 	});
 }
-function ReleaseHint() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-		className: "text-sm text-muted",
-		children: "Export lives in the book. Take the JSON off the handset the way you take any other file. The nodes still hold the IQ."
+function ReleaseStep() {
+	const c = useActive();
+	const setField = useBook((s) => s.setField);
+	const quote = chainCQuote(c);
+	const [msg, setMsg] = (0, import_react.useState)("");
+	const columns = [
+		["predictedS", "Chain S predicted budget"],
+		["measuredFloorS", "Chain S measured residual floor"],
+		["reportedBoundS", "Chain S reported bound"],
+		["predictedC", "Chain C predicted budget"],
+		["measuredFloorC", "Chain C measured residual floor"],
+		["reportedBoundC", "Chain C reported bound"]
+	];
+	function boundError() {
+		const reportedS = num(c.fields.reportedBoundS ?? "");
+		const measuredS = num(c.fields.measuredFloorS ?? "");
+		if (reportedS != null && measuredS != null && reportedS + 1e-9 < measuredS) return "Chain S reported bound is tighter than the measured double-difference floor. The first column does not tighten the third.";
+		const reportedC = num(c.fields.reportedBoundC ?? "");
+		if (reportedC != null && quote.failed) return "Chain C is not quotable. The common-clock decomposition failed. Switch 3. Clear the reported bound.";
+		if (reportedC != null && quote.boundHi != null && reportedC + 1e-9 < quote.boundHi) return `Chain C reported bound is tighter than the per-baseline maximum (${formatRad(quote.boundHi)}).`;
+		if (reportedC != null && !quote.quotable) return "Chain C has no co-located floor yet. Do not report a bound.";
+		return null;
+	}
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "space-y-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+				className: "text-sm text-muted",
+				children: [
+					"Predicted budget, measured residual floor, and reported bound are three different numbers. Chain S uses the measured double-difference floor. Chain C uses the per-baseline maximum from the clock step",
+					quote.quotable ? ` (${formatRad(quote.boundLo)} – ${formatRad(quote.boundHi)})` : "",
+					". Catalog rows stay catalog until you replace them. This page does not invent a residual."
+				]
+			}),
+			columns.map(([id, label]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
+				label,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+					className: "field font-mono",
+					value: c.fields[id] ?? "",
+					onChange: (e) => setField(c.id, id, e.target.value),
+					placeholder: "rad, or leave blank"
+				})
+			}, id)),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "btn btn-primary w-full",
+				onClick: () => {
+					const err = boundError();
+					if (err) {
+						setMsg(err);
+						return;
+					}
+					exportMilestone(c, "campaign-close");
+					setMsg("Campaign-close JSON download started. Export Markdown from Book and move both off the handset.");
+				},
+				children: "Close the campaign and export JSON"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: "btn btn-ghost w-full",
+				onClick: () => download(`${campaignFilename(c.name)}.md`, campaignMarkdown(c), "text/markdown"),
+				children: "Export Markdown"
+			}),
+			msg ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-sm text-muted",
+				children: msg
+			}) : null
+		]
 	});
 }
 //#endregion

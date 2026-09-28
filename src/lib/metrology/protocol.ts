@@ -200,7 +200,7 @@ export const STEPS: StepDef[] = [
     caption: "Two front ends are Phase 0. Detection-grade work needs four nodes.",
     paragraphs: [
       "Each node is a GNSS-disciplined oscillator, an SDR, and a surveyed antenna. Record the installed unit. Catalog ADEV is not accepted where the paper says the measured curve is load-bearing.",
-      "Two identified nodes are enough for Phase 0: floor, injection recovery, and a single-baseline lag class. Detection-grade Analysis A needs four nodes so the statistic can use two disjoint pairs. A device fix is not carrier phase and not a monument. Empty coordinates stay empty.",
+      "Two identified nodes are enough for Phase 0: floor, injection recovery, and a single-baseline lag class. Detection-grade Analysis A needs four nodes so the statistic can use two disjoint pairs. A device fix is not carrier phase and not a monument. Empty coordinates stay empty. Optional E-field, barometer, or radon notes may be logged on the book. They are not estimator inputs.",
     ],
   },
   {
@@ -306,9 +306,10 @@ export const STEPS: StepDef[] = [
     title: "Adjudicate the kill switches",
     image: ART.null,
     imageAlt: "The null fringe is a result, not a failure.",
-    caption: "Instrument switches only. Supplement S2 does not gate the array.",
+    caption: "Four instrument switches: 1, 2, 3, and 6. Switches 4 and 5 are withdrawn with S1.",
     paragraphs: [
-      "A null on Chain S is not a null on Chain C. Switch 2 cannot fire on a null, and a delay-class pass is not evidence of anomalous coherence. Switch 3 stops the campaign until the pipeline is repaired. Switch 6 is load-bearing on H_C.",
+      "Four instrument switches are pre-registered: 1, 2, 3, and 6. Numbering keeps Switch 6 so labels do not fork. Switches 4 and 5 are withheld with Supplements S1 and S2 and are not adjudicable here. A null on Chain S is not a null on Chain C.",
+      "Switch 2 cannot fire on a null, and a delay-class pass is not evidence of anomalous coherence. Switch 3 stops the campaign until the pipeline is repaired. Switch 6 is load-bearing on H_C. Optional E/B, barometer, or radon notes are covariates. They are not estimator inputs.",
       "Record the call you are actually making. The book will not mark a switch passed because a field was left on its default.",
     ],
   },
@@ -351,21 +352,12 @@ export const SWITCHES: {
     body: "Open or blind injection not recovered, including the distinctive chain pattern, or off-injection not back on the null floor, or the time-slide background disagrees with the bootstrap, or the empirical false-alarm rate misses its target, or the common-clock pair or a spot check misses its predicted null.",
   },
   {
-    n: 4,
-    title: "Möbius holonomy as physics",
-    blast: "Supplement S1 as physics. Keep as bookkeeping if useful.",
-    body: "A closed RF or fiber loop of controlled area and reversed chirality yields only standard Berry, Faraday, or Sagnac phase. No extra discrete π.",
-  },
-  {
-    n: 5,
-    title: "Gravitating plenum",
-    blast: "Literal Dirac-sea ontology. The phase program never needed it.",
-    body: "Already thrown by cosmology. Vacuum energy and a Planck-cutoff zero-point estimate do not load the carrier-phase bound.",
-  },
-  {
     n: 6,
     title: "Simultaneity convention",
     blast: "Any non-local reading of that dataset. Load-bearing on Chain C.",
-    body: "If a |τ| ≪ τ_c excess moves under an independent time transfer — two-way optical, common-view versus all-in-view, or a second constellation — or does not survive a common-clock spot-check substitution, it is a clock-ensemble artifact.",
+    body: "If a |τ| ≪ τ_c excess moves under an independent time transfer — two-way optical, common-view versus all-in-view, or a second constellation — or does not survive substitution of the common-clock calibration, it is a clock-ensemble or hardware artifact.",
   },
 ];
+
+/** Withdrawn with Supplements S1/S2. Not adjudicable. Kept so old logs stay readable. */
+export const WITHDRAWN_SWITCHES = [4, 5] as const;

@@ -1,4 +1,4 @@
-//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-BOAFQ0E1.js
+//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-D0V4UEG3.js
 var tsrStartManifest = () => ({ routes: {
 	__root__: {
 		filePath: "/workspace/src/routes/__root.tsx",
@@ -9,44 +9,48 @@ var tsrStartManifest = () => ({ routes: {
 			"/doctrine",
 			"/walk"
 		],
-		preloads: ["/assets/index-Yk65dzyn.js"],
+		preloads: ["/assets/index-1y5RvE3e.js"],
 		scripts: [{ attrs: {
 			type: "module",
 			async: !0,
-			src: "/assets/index-Yk65dzyn.js"
+			src: "/assets/index-1y5RvE3e.js"
 		} }]
 	},
 	"/": {
 		filePath: "/workspace/src/routes/index.tsx",
 		children: void 0,
-		preloads: ["/assets/routes-D5IhoNzR.js", "/assets/chrome-C7GLPeTa.js"]
+		preloads: ["/assets/routes-7PepYn6y.js", "/assets/chrome-hrYYhh0y.js"]
 	},
 	"/bench": {
 		filePath: "/workspace/src/routes/bench.tsx",
 		children: void 0,
-		preloads: ["/assets/bench-B6PdrwY8.js", "/assets/chrome-C7GLPeTa.js"]
+		preloads: [
+			"/assets/bench-UBqOE26w.js",
+			"/assets/chrome-hrYYhh0y.js",
+			"/assets/report-ByBP9OmF.js"
+		]
 	},
 	"/book": {
 		filePath: "/workspace/src/routes/book.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/book-DcwzBXGZ.js",
-			"/assets/chrome-C7GLPeTa.js",
-			"/assets/report-C0cfUsAj.js"
+			"/assets/book-DlRO5lBt.js",
+			"/assets/chrome-hrYYhh0y.js",
+			"/assets/report-ByBP9OmF.js"
 		]
 	},
 	"/doctrine": {
 		filePath: "/workspace/src/routes/doctrine.tsx",
 		children: void 0,
-		preloads: ["/assets/doctrine-B0I_qlwo.js", "/assets/chrome-C7GLPeTa.js"]
+		preloads: ["/assets/doctrine-BvBY8Neu.js", "/assets/chrome-hrYYhh0y.js"]
 	},
 	"/walk": {
 		filePath: "/workspace/src/routes/walk.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/walk-n96zZ7bj.js",
-			"/assets/chrome-C7GLPeTa.js",
-			"/assets/report-C0cfUsAj.js"
+			"/assets/walk-NLfk2WOx.js",
+			"/assets/chrome-hrYYhh0y.js",
+			"/assets/report-ByBP9OmF.js"
 		]
 	}
 } });

@@ -1,4 +1,4 @@
-/** Closed-form metrology from Rev 3.5. No measured residuals live here. */
+/** Closed-form metrology from Rev 3.6. No measured residuals live here. */
 
 export const C_MPS = 299_792_458;
 export const F_L1_HZ = 154 * 10.23e6;
@@ -6,7 +6,7 @@ export const F_L5_HZ = 115 * 10.23e6;
 export const F_RATIO = 154 / 115;
 export const IONO_RATIO = 115 / 154;
 export const LAMBDA_L1_M = C_MPS / F_L1_HZ;
-export const PAPER_REV = "3.5";
+export const PAPER_REV = "3.6";
 
 export type ChainId = "S" | "C";
 
@@ -19,7 +19,7 @@ export function num(raw: string | number | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** σ_φ ≈ 2π f τ σ_y  (rad). Rev 3.5 §3.4. */
+/** σ_φ ≈ 2π f τ σ_y  (rad). Rev 3.6 §3.4. */
 export function sigmaPhiRad(fHz: number, tauS: number, sigmaY: number): number {
   return 2 * Math.PI * fHz * tauS * sigmaY;
 }
@@ -387,8 +387,8 @@ export function paperIdentityChecks(): IdentityCheck[] {
       id: "igs",
       label: "IGS clock residual, 75 ps at L1",
       got: igs.toFixed(3) + " rad",
-      expect: "≈ 0.7 rad",
-      pass: near(igs, 0.7, 0.08),
+      expect: "≈ 0.74 rad",
+      pass: near(igs, 0.74, 0.02),
     },
     {
       id: "tau",

@@ -2,7 +2,7 @@ import { i as __toESM } from "../_runtime.mjs";
 import { J as require_react, S as require_jsx_runtime, b as Link, p as useRouterState } from "../_libs/@tanstack/react-router+[...].mjs";
 import { a as Compass, i as FlaskConical, n as Shield, o as BookOpen, r as Radio } from "../_libs/lucide-react.mjs";
 import { t as create } from "../_libs/zustand.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/chrome-C6pvSZO-.js
+//#region node_modules/.nitro/vite/services/ssr/assets/chrome--h4omt2u.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var ART = {
@@ -118,18 +118,38 @@ var PREREG = [
 	{
 		id: "switch2tol",
 		label: "Switch 2 relative tolerance",
-		hint: "On φ₁/φ₂, classification product, radians or cycles. Example: 0.05.",
+		hint: "On φ₁/φ₂, radians or cycles. Passing the delay class is necessary, not sufficient. Example: 0.05.",
 		placeholder: "0.05"
 	},
 	{
 		id: "clockFloorRad",
 		label: "Common-clock non-clock floor (rad)",
-		hint: "Measured. Chain C's bound cannot be quoted tighter than this. Leave blank until the run exists."
+		hint: "Measured co-located non-clock floor. One term of the Chain C maximum, not the whole bound. Leave blank until the run exists."
 	},
 	{
 		id: "biasHash",
-		label: "L1/L5 inter-channel bias file hash",
-		hint: "From the common-clock run. The phase-offset-class confound for Switch 2."
+		label: "L1/L5 inter-channel bias hash",
+		hint: "SHA-256 of the bias file from the common-clock run. Filled on the clock step, not here."
+	},
+	{
+		id: "namedInputs",
+		label: "Named estimator inputs",
+		hint: "Chain S: two disjoint double-difference series. Chain C: two disjoint same-satellite inter-node series. A 2–3 node array is Phase 0, not a search."
+	},
+	{
+		id: "wipeoff",
+		label: "Data-bit wipeoff and cycle slips",
+		hint: "L1 C/A wipeoff method, and the slip detect, repair, and exclusion rule. Unrepaired slips never enter an Analysis A window."
+	},
+	{
+		id: "phase0",
+		label: "Phase 0 validation",
+		hint: "Residual floor, measured L_eff, injection recovery, empirical false-alarm rate, and bound coverage. Publish these before any search claim."
+	},
+	{
+		id: "calibTransfer",
+		label: "Calibration transfer",
+		hint: "Repeat schedule, interleaved spot checks, drift tolerance, and the per-baseline atmospheric treatment. A spot check outside tolerance is Switch 3."
 	}
 ];
 var STEPS = [
@@ -141,9 +161,9 @@ var STEPS = [
 		imageAlt: "Night sky with two satellite glints and a survey tripod, standing in for a sky gradient.",
 		caption: "H_S lives on direction. H_C does not. A null on one chain does not constrain the other.",
 		paragraphs: [
-			"H_S is a direction-dependent anomalous phase — a sky gradient. Chain S, the between-satellite single difference, cancels isotropic site-common phase by construction. A null on Chain S does not touch H_C.",
-			"H_C is an isotropic common phase, identical at every antenna regardless of which satellite is tracked. Only Chain C keeps receiver-common phase. It inherits the receiver clock. The title hypothesis lives on the harder chain.",
-			"The array is a phase microscope pointed at zero. This program tests no predicted amplitude. A null is the expected result, and the bound is the product."
+			"H_S is a direction-dependent anomalous phase — a sky gradient. Chain S, the between-node double difference of between-satellite single differences, cancels isotropic site-common phase and both clocks exactly. A null on Chain S does not touch H_C.",
+			"H_C is anomalous phase common to the tracked carriers at a site and correlated across sites, with a non-vanishing inter-site differential. A phase literally identical at every antenna cancels in every inter-node difference and is unobservable. Only Chain C keeps that surviving differential. It inherits the receiver clock.",
+			"The paper reports upper bounds. The vacuum-structure question motivates the program and is not a claim of §§1–8. A null is the expected result, and the bound is the product."
 		]
 	},
 	{
@@ -154,9 +174,9 @@ var STEPS = [
 		imageAlt: "A field kit: handset, antenna cable, and hard hat on a flight case at dusk.",
 		caption: "The phone keeps the book. The node tracks the carrier. Do not swap them.",
 		paragraphs: [
-			"Raw wideband IQ stays in a ring buffer. Tracking loops dump prompt-correlator I/Q at f_d. Carrier phase is atan2(Q, I) on that dump.",
-			"Chain S is formed per node, then IGS satellite-clock correction is applied per node before any inter-node comparison. Analysis A consumes those post-IGS single-difference residuals. The double difference is a consistency cross-check, not the estimator input.",
-			"Chain C is the same-satellite inter-node difference. The satellite clock cancels. The receiver clock does not. Below the GPSDO steering bandwidth the nodes are one clock, and those frequencies are excluded on both chains."
+			"Raw wideband IQ stays in a ring buffer on the nodes. The per-dump observable is NCO carrier phase plus the prompt discriminator residual. atan2(Q, I) alone is the loop residual, not the carrier. L1 C/A needs data-bit wipeoff. Cycle slips follow the pre-registered rule; unrepaired slips are excluded.",
+			"Chain S forms a between-satellite single difference per node, then the between-node double difference. That double difference is the Analysis A and B input. It cancels the shared IGS clock residual, about 0.7 rad at L1, exactly. The per-node post-IGS single difference is a diagnostic of the subtraction, not a detection input.",
+			"Chain C is the same-satellite inter-node difference. The satellite clock cancels. The receiver clock does not. Below the GPSDO steering bandwidth the nodes are one clock, and those frequencies are excluded on both chains. Detection-grade work uses two disjoint pairs, which means four nodes. Two or three nodes are Phase 0."
 		]
 	},
 	{
@@ -165,8 +185,8 @@ var STEPS = [
 		title: "Put the array on the page",
 		image: ART.hero,
 		imageAlt: "Two choke-ring antennas and a field rack under a desert night sky.",
-		caption: "DSLV-ZPDI nodes. Two front ends are the minimum that makes a pair.",
-		paragraphs: ["Each node is a GNSS-disciplined oscillator, an SDR, and a surveyed antenna. Record the installed unit's identity. Catalog ADEV is not accepted where the paper says the measured curve is load-bearing.", "A device fix from this handset is a real GNSS solution if the radio returns one. It is not a carrier-phase residual, and it is not a substitute for a geodetic monument. You can type a surveyed coordinate instead. Empty stays empty."]
+		caption: "Two front ends are Phase 0. Detection-grade work needs four nodes.",
+		paragraphs: ["Each node is a GNSS-disciplined oscillator, an SDR, and a surveyed antenna. Record the installed unit. Catalog ADEV is not accepted where the paper says the measured curve is load-bearing.", "Two identified nodes are enough for Phase 0: floor, injection recovery, and a single-baseline lag class. Detection-grade Analysis A needs four nodes so the statistic can use two disjoint pairs. A device fix is not carrier phase and not a monument. Empty coordinates stay empty. Optional E-field, barometer, or radon notes may be logged on the book. They are not estimator inputs."]
 	},
 	{
 		id: "prereg",
@@ -184,7 +204,11 @@ var STEPS = [
 		image: ART.clock,
 		imageAlt: "One oscillator, a splitter, and two SDR front ends on a bench.",
 		caption: "Common-clock Chain C has site phase and inter-channel bias, and no relative clock wander by construction.",
-		paragraphs: ["One GPSDO output drives two complete front ends at one site, antennas a metre apart. That pair measures the non-clock floor. The independent-clock co-located pair measures site-common plus relative clock. Differencing the configurations isolates the clock term.", "If the common-clock pair does not sit on its predicted null, the campaign stops at Switch 3. No science claim. Chain C's bound is this measured floor — not the atmospheric RSS, whatever the RSS says."]
+		paragraphs: [
+			"One GPSDO output drives two complete front ends at one site, antennas a metre apart. That pair measures the non-clock floor. The independent-clock co-located pair measures site-common plus relative clock. Differencing the configurations isolates the clock term.",
+			"If the common-clock pair does not sit on its predicted null, or a later spot check leaves the frozen tolerance, the campaign stops at Switch 3. The calibration measures this site's hardware. It does not reproduce far-site troposphere, far-site multipath, or independent GPSDO drift.",
+			"Per baseline, the Chain C bound is the maximum of the co-located non-clock floor, the isolated relative-clock term, and the baseline atmospheric differential. No tighter number is quoted. Drift variance between repeats is added in quadrature to the floor."
+		]
 	},
 	{
 		id: "inject",
@@ -193,7 +217,7 @@ var STEPS = [
 		image: ART.chainC,
 		imageAlt: "Two co-located antennas under one even glow.",
 		caption: "Isotropic injection must appear on Chain C and vanish on Chain S. The reverse pattern is H_S.",
-		paragraphs: ["Open injections test the pipeline. Blind injections test the analysts. Log recovery only after you have actually run it. A sealed blind injection is logged as sealed — do not type an amplitude you are not supposed to know.", "A chain that fails its distinctive injection has no standing to report an excess. Off-injection must return to the null floor."]
+		paragraphs: ["Open injections test the pipeline. Blind injections test the analysts. Before any detection claim, run end-to-end trials into realistic residuals and record the empirical false-alarm rate and bound coverage. A sealed injection is logged as sealed.", "Isotropic site-common phase must appear on Chain C and vanish on Chain S. Direction-differential phase must appear on Chain S. Off-injection must return to the null floor. A chain that misses its signature, the false-alarm target, or the coverage target has no standing to report an excess."]
 	},
 	{
 		id: "resolution",
@@ -211,7 +235,7 @@ var STEPS = [
 		image: ART.null,
 		imageAlt: "Null fringe on an optical table, the expected picture.",
 		caption: "SHA-256 of the canonical registry. Amendments stay visible.",
-		paragraphs: ["Freezing hashes the nodes, the pre-registration fields, and the budget rows you have marked. Science logs after this point are append-only.", "An amendment clears the lock, stores the previous digest, and stamps the reason. The book does not pretend the original registry is still the one you froze."]
+		paragraphs: ["Freezing hashes the nodes, the pre-registration fields, and the budget rows. The handset time is self-attested. Without an external anchor — OSF, a signed git tag, or OpenTimestamps / RFC-3161 — the freeze is a draft, not a pre-registration.", "Record the anchor transaction ID beside the digest, then export the JSON. An amendment clears the lock, stores the previous digest, and needs a new anchor and a new export before science entries."]
 	},
 	{
 		id: "analysis-a",
@@ -220,7 +244,7 @@ var STEPS = [
 		image: ART.hero,
 		imageAlt: "The field array the residuals actually come from.",
 		caption: "Type γ̂ from the node reduction. The Beta law is computed. The residual is not.",
-		paragraphs: ["Calendar seconds are not independent. Use L_eff from the frozen block length, or type the γ̂ you measured and the L you are willing to defend.", "The large-L floor with L = 86400 is shown only as the paper's trap. It is not the program floor. Systematics sit above both."]
+		paragraphs: ["Chain S consumes two disjoint double-difference series. Chain C consumes two disjoint same-satellite inter-node series. With fewer than four nodes this step can record a Phase 0 floor. It cannot record a detection.", "The large-L floor with L = 86400 is the paper's trap. It is not the program floor. Report predicted budget, measured residual floor, and reported bound as three different numbers."]
 	},
 	{
 		id: "analysis-b",
@@ -238,7 +262,7 @@ var STEPS = [
 		image: ART.chromatic,
 		imageAlt: "A short copper helix and a longer amber helix over a survey mark.",
 		caption: "φ in radians or cycles. Delay class tracks f₁/f₂. Ionosphere tracks the inverse. Equal radians is a processing artifact.",
-		paragraphs: ["The iono-free combination mixes the carriers and destroys the chromatic ratio. It is never the Switch 2 observable.", "Delay class, ratio ≈ 1.339: equal in seconds or metres. Ionospheric class, ratio ≈ 0.747: routes back to the null. Phase-offset class, ratio = 1: instrumental. Anything that matches none of them does not pass."]
+		paragraphs: ["The iono-free combination mixes the carriers and destroys the chromatic ratio. It is never the Switch 2 observable. Both entries must be radians, or both cycles. Do not substitute metres.", "Delay class, ratio ≈ 1.339, is the only class that may proceed, and passing it is necessary, not sufficient: troposphere, multipath, and clock error are also delay-class. Ionosphere ≈ 0.747 returns to the null. Ratio 1 is instrumental. A mixture that matches no class is not promoted."]
 	},
 	{
 		id: "switches",
@@ -246,8 +270,12 @@ var STEPS = [
 		title: "Adjudicate the kill switches",
 		image: ART.null,
 		imageAlt: "The null fringe is a result, not a failure.",
-		caption: "Instrument switches only. Appendix B does not gate the array.",
-		paragraphs: ["A null on Chain S is not a null on Chain C. Switch 2 cannot fire on a null. Switch 3 stops the campaign until the pipeline is repaired. Switch 6 is load-bearing on H_C.", "Record the call you are actually making. The book will not mark a switch passed because a field was left on its default."]
+		caption: "Four instrument switches: 1, 2, 3, and 6. Switches 4 and 5 are withdrawn with S1.",
+		paragraphs: [
+			"Four instrument switches are pre-registered: 1, 2, 3, and 6. Numbering keeps Switch 6 so labels do not fork. Switches 4 and 5 are withheld with Supplements S1 and S2 and are not adjudicable here. A null on Chain S is not a null on Chain C.",
+			"Switch 2 cannot fire on a null, and a delay-class pass is not evidence of anomalous coherence. Switch 3 stops the campaign until the pipeline is repaired. Switch 6 is load-bearing on H_C. Optional E/B, barometer, or radon notes are covariates. They are not estimator inputs.",
+			"Record the call you are actually making. The book will not mark a switch passed because a field was left on its default."
+		]
 	},
 	{
 		id: "release",
@@ -256,7 +284,7 @@ var STEPS = [
 		image: ART.field,
 		imageAlt: "The handset that carries the record off the hill.",
 		caption: "JSON for the archive. Markdown for a human. Both are the campaign you typed.",
-		paragraphs: ["Raw IQ stays on the nodes. This export is the pre-registration, the measured floors, the injection log, and the adjudications. A null is a publishable pair of upper bounds.", "Chain S is bounded by troposphere and multipath under the rows you marked measured — catalog rows stay labeled catalog. Chain C is bounded by the common-clock floor, or it is not bounded."]
+		paragraphs: ["Raw IQ stays on the nodes. Export at every frozen milestone: registry freeze, amendment re-freeze, calibration append, and campaign close. A null is a publishable pair of upper bounds.", "For each chain write three columns: predicted budget, measured residual floor, and reported bound. Chain S uses the measured double-difference floor. Chain C uses the per-baseline maximum. The first column does not imply the third."]
 	}
 ];
 var SWITCHES = [
@@ -270,34 +298,22 @@ var SWITCHES = [
 		n: 2,
 		title: "Chromaticity",
 		blast: "The candidate, not the array. This switch cannot fire on a null.",
-		body: "Uncombined L1 and L5. Delay class φ₁/φ₂ = f₁/f₂. Ionospheric class φ₁/φ₂ = f₂/f₁. Phase-offset class φ₁/φ₂ = 1. Only the delay class, inside the pre-registered tolerance, survives."
+		body: "Uncombined L1 and L5, with uncertainty. Delay class φ₁/φ₂ ≈ 1.339 may proceed, but passing is necessary, not sufficient: troposphere, multipath, and clock error are also delay-class. Ionospheric class ≈ 0.747 returns to the null. Phase-offset class = 1 is instrumental. A mixture that matches no class is not promoted. Hardware frequency dependence is bounded by the common-clock run."
 	},
 	{
 		n: 3,
 		title: "Pipeline non-recovery",
 		blast: "The campaign, until the pipeline is repaired. No science claim.",
-		body: "Open or blind injection not recovered, off-injection not back on the null floor, time-slide background disagrees with the bootstrap, or the common-clock pair misses its predicted null."
-	},
-	{
-		n: 4,
-		title: "Möbius holonomy as physics",
-		blast: "Appendix A as physics. Keep as bookkeeping if useful.",
-		body: "A closed RF or fiber loop of controlled area and reversed chirality yields only standard Berry, Faraday, or Sagnac phase. No extra discrete π."
-	},
-	{
-		n: 5,
-		title: "Gravitating plenum",
-		blast: "Literal Dirac-sea ontology. The phase program never needed it.",
-		body: "Already thrown by cosmology. Vacuum energy and a Planck-cutoff zero-point estimate do not load the carrier-phase bound."
+		body: "Open or blind injection not recovered, including the distinctive chain pattern, or off-injection not back on the null floor, or the time-slide background disagrees with the bootstrap, or the empirical false-alarm rate misses its target, or the common-clock pair or a spot check misses its predicted null."
 	},
 	{
 		n: 6,
 		title: "Simultaneity convention",
 		blast: "Any non-local reading of that dataset. Load-bearing on Chain C.",
-		body: "If a |τ| ≪ τ_c excess moves under an independent time transfer — two-way optical, common-view versus all-in-view, or a second constellation — it is a clock-ensemble artifact."
+		body: "If a |τ| ≪ τ_c excess moves under an independent time transfer — two-way optical, common-view versus all-in-view, or a second constellation — or does not survive substitution of the common-clock calibration, it is a clock-ensemble or hardware artifact."
 	}
 ];
-/** Closed-form metrology from Rev 3.4. No measured residuals live here. */
+/** Closed-form metrology from Rev 3.6. No measured residuals live here. */
 var C_MPS = 299792458;
 var F_L1_HZ = 157542e4;
 var F_L5_HZ = 117645e4;
@@ -312,7 +328,7 @@ function num(raw) {
 	const n = Number(t);
 	return Number.isFinite(n) ? n : null;
 }
-/** σ_φ ≈ 2π f τ σ_y  (rad). Rev 3.4 §3.4. */
+/** σ_φ ≈ 2π f τ σ_y  (rad). Rev 3.6 §3.4. */
 function sigmaPhiRad(fHz, tauS, sigmaY) {
 	return 2 * Math.PI * fHz * tauS * sigmaY;
 }
@@ -369,8 +385,8 @@ function weakPhase(sigmaPhi, r) {
 }
 /**
 * |ionospheric carrier phase| in radians.
-* Δρ = −40.3 TEC / f² metres on the carrier; φ = 2π Δρ / λ.
-* TEC argument is in TECU (10¹⁶ m⁻²).
+* Range scales as 1/f². Phase in radians or cycles scales as 1/f, because
+* φ = 2π Δρ / λ and λ scales as 1/f. TEC argument is TECU (10¹⁶ m⁻²).
 */
 function ionoPhaseRad(tecTecU, fHz) {
 	const tec = tecTecU * 0x2386f26fc10000;
@@ -502,6 +518,24 @@ function morphology(input) {
 		detail: input.chain === "C" ? "Near-zero lag on a resolved baseline. H_C still has to clear the common-clock floor, Switch 2 on the uncombined L1/L5 pair (delay class only), and Switch 6 under an independent time transfer. Until then it is a queue entry, not a result." : "Near-zero lag that is not confined to the co-located control. Label it H_S and send it to Switch 2. The iono-free combination is not the Switch 2 observable."
 	};
 }
+/** 75 ps IGS final clock residual, in radians at a carrier. Identical at every node using that product. */
+function igsClockRad(fHz, dtS = 75e-12) {
+	return 2 * Math.PI * fHz * dtS;
+}
+/** Chain-S double-difference floor is √2 times the single-difference RSS. */
+function doubleDifferenceFloor(singleDifferenceRad) {
+	return singleDifferenceRad * Math.SQRT2;
+}
+/**
+* Per-baseline Chain C bound. The maximum of the co-located non-clock floor,
+* the isolated relative-clock term, and the baseline atmospheric differential.
+* Missing terms are omitted. An empty list means the bound is not yet quotable.
+*/
+function chainCBoundRad(parts) {
+	const vals = parts.filter((v) => typeof v === "number" && Number.isFinite(v) && v >= 0);
+	if (!vals.length) return null;
+	return Math.max(...vals);
+}
 /** Variance split stated in §4.4. Valid only if the two runs differ by the clock. */
 function clockIsolation(commonClockRms, independentRms) {
 	if (!(commonClockRms >= 0) || !(independentRms >= 0)) return null;
@@ -516,13 +550,17 @@ function paperIdentityChecks() {
 	const tau10 = lightTimeS(1e4);
 	const d1 = baselineForLags(1e3, 1);
 	const floor = betaNull(86400);
-	const floor300 = betaNull(300);
-	const weak = weakPhase(.3, floor?.rMin3 ?? 0);
-	const weak300 = floor300 ? weakPhase(.3, floor300.rMin3) : null;
+	const weak = weakPhase(.42, floor?.rMin3 ?? 0);
+	const weakO = weakPhase(.42, .1);
 	const pathMm = weak ? phaseToPathM(weak.approx, F_L1_HZ) * 1e3 : NaN;
-	const path300 = weak300 ? phaseToPathM(weak300.approx, F_L1_HZ) * 1e3 : NaN;
-	const rssLo = rss([pathToPhaseRad(.01, F_L1_HZ), pathToPhaseRad(.005, F_L1_HZ)]);
-	const rssHi = rss([pathToPhaseRad(.01, F_L1_HZ), pathToPhaseRad(.02, F_L1_HZ)]);
+	const pathO = weakO ? phaseToPathM(weakO.approx, F_L1_HZ) * 1e3 : NaN;
+	const phiO = weakO?.approx ?? NaN;
+	const sdLo = rss([pathToPhaseRad(.01, F_L1_HZ), pathToPhaseRad(.005, F_L1_HZ)]);
+	const sdHi = rss([pathToPhaseRad(.01, F_L1_HZ), pathToPhaseRad(.02, F_L1_HZ)]);
+	const ddLo = doubleDifferenceFloor(sdLo);
+	const ddHi = doubleDifferenceFloor(sdHi);
+	const igs = igsClockRad(F_L1_HZ);
+	const ionoScale = ionoHf / ionoL1;
 	const near = (got, exp, frac) => Math.abs(got - exp) <= Math.abs(exp) * frac;
 	return [
 		{
@@ -554,6 +592,20 @@ function paperIdentityChecks() {
 			pass: near(ionoHf, 8.4, .03)
 		},
 		{
+			id: "iono-scale",
+			label: "0.1 TECU, 100 MHz / L1",
+			got: ionoScale.toFixed(2),
+			expect: "≈ 15.75, not its square",
+			pass: near(ionoScale, 157542e4 / 1e8, .01) && ionoScale < 20
+		},
+		{
+			id: "igs",
+			label: "IGS clock residual, 75 ps at L1",
+			got: igs.toFixed(3) + " rad",
+			expect: "≈ 0.74 rad",
+			pass: near(igs, .74, .02)
+		},
+		{
 			id: "tau",
 			label: "Light time, 10 km",
 			got: (tau10 * 1e6).toFixed(2) + " µs",
@@ -583,24 +635,24 @@ function paperIdentityChecks() {
 		},
 		{
 			id: "weak",
-			label: "σ_φ=0.3, calendar r_min → path at L1",
+			label: "σ_φ=0.42 rad, calendar r_min → path at L1",
 			got: Number.isFinite(pathMm) ? pathMm.toFixed(2) + " mm" : "—",
-			expect: "≈ 0.8 mm",
-			pass: near(pathMm, .8, .08)
+			expect: "≈ 1.1 mm",
+			pass: near(pathMm, 1.1, .08)
 		},
 		{
 			id: "weak300",
-			label: "L_eff=300, κ=3 → path at L1",
-			got: Number.isFinite(path300) ? path300.toFixed(2) + " mm" : "—",
-			expect: "≈ 3.3 mm",
-			pass: near(path300, 3.3, .08)
+			label: "L_eff=300 illustration, r∼10⁻¹, σ_φ=0.42 rad",
+			got: Number.isFinite(pathO) ? `${phiO.toFixed(3)} rad · ${pathO.toFixed(2)} mm` : "—",
+			expect: "φ_s≈0.13 rad ≈ 4.0 mm",
+			pass: near(phiO, .13, .05) && near(pathO, 4, .08)
 		},
 		{
 			id: "rss",
-			label: "Chain S RSS, trop 1 cm + multipath 0.5–2 cm",
-			got: rssLo.toFixed(2) + "–" + rssHi.toFixed(2) + " rad",
-			expect: "inside 0.30–0.80 rad",
-			pass: rssLo >= .3 && rssLo <= .5 && rssHi >= .6 && rssHi <= .8
+			label: "Chain S double-difference floor, trop + multipath",
+			got: ddLo.toFixed(2) + "–" + ddHi.toFixed(2) + " rad",
+			expect: "inside 0.4–1.1 rad",
+			pass: ddLo >= .4 && ddLo <= .7 && ddHi >= .9 && ddHi <= 1.15
 		}
 	];
 }
@@ -727,7 +779,7 @@ function makeCampaign(input) {
 var LOCKED_WHEN_FROZEN = new Set(PREREG.map((f) => f.id));
 function canonical(c) {
 	const payload = {
-		rev: "3.4",
+		rev: "3.6",
 		app: "DSLV-ZPDI-Probing-The-Vacuum-Structure",
 		name: c.name,
 		operator: c.operator,
@@ -791,7 +843,12 @@ function normalize(c) {
 		acked: Array.isArray(c.acked) ? c.acked.filter((a) => typeof a === "string") : [],
 		fields,
 		amendments: Array.isArray(c.amendments) ? c.amendments : [],
-		frozen: c.frozen && typeof c.frozen.sha256 === "string" ? c.frozen : null
+		frozen: c.frozen && typeof c.frozen.sha256 === "string" ? {
+			at: c.frozen.at ?? "",
+			sha256: c.frozen.sha256,
+			anchorKind: c.frozen.anchorKind ?? "",
+			anchorId: c.frozen.anchorId ?? ""
+		} : null
 	};
 }
 function preregComplete(c) {
@@ -805,6 +862,18 @@ function clockReady(c) {
 }
 function nodesReady(c) {
 	return c.nodes.length >= 2 && c.nodes.every((n) => n.name.trim() && n.gpsdo.trim() && n.sigmaY.trim() && n.fLoopHz.trim());
+}
+function detectionReady(c) {
+	return nodesReady(c) && c.nodes.length >= 4;
+}
+function registryAnchored(c) {
+	return Boolean(c.frozen?.sha256 && c.frozen.anchorId.trim());
+}
+function registryExported(c) {
+	if (!c.frozen?.sha256 || !c.frozen.anchorId.trim()) return false;
+	const sha = c.frozen.sha256;
+	const anchor = c.frozen.anchorId.trim();
+	return c.logs.some((l) => l.kind === "export" && l.body.includes(sha) && l.body.includes(anchor));
 }
 var useBook = create((set, get) => ({
 	campaigns: [],
@@ -907,7 +976,9 @@ var useBook = create((set, get) => ({
 			...cur,
 			frozen: {
 				at,
-				sha256: digest
+				sha256: digest,
+				anchorKind: "",
+				anchorId: ""
 			},
 			logs: [{
 				id: uid(),
@@ -919,6 +990,29 @@ var useBook = create((set, get) => ({
 			}, ...cur.logs]
 		}));
 		return digest;
+	},
+	setAnchor: (id, anchorKind, anchorId) => {
+		const c = get().campaigns.find((x) => x.id === id);
+		const trimmed = anchorId.trim();
+		if (!c?.frozen || !trimmed) return false;
+		const at = stamp();
+		get().patch(id, (cur) => ({
+			...cur,
+			frozen: cur.frozen ? {
+				...cur.frozen,
+				anchorKind,
+				anchorId: trimmed
+			} : cur.frozen,
+			logs: [{
+				id: uid(),
+				at,
+				kind: "freeze",
+				title: "External anchor recorded",
+				body: `${anchorKind || "unspecified"} ${trimmed}. Digest ${cur.frozen?.sha256 ?? ""}. The anchor ID is stored beside the digest, not inside it, so an external timestamp of that digest still matches.`,
+				chain: ""
+			}, ...cur.logs]
+		}));
+		return true;
 	},
 	amend: (id, reason) => {
 		const c = get().campaigns.find((x) => x.id === id);
@@ -1056,7 +1150,7 @@ function Shell({ children }) {
 		className: "app-grid min-h-dvh text-foreground",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
-				className: "shell-top sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur-sm",
+				className: "shell-top sticky top-0 z-20 border-b border-border bg-background",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "mx-auto flex max-w-3xl items-center gap-3 px-4 py-3",
 					children: [
@@ -1069,10 +1163,10 @@ function Shell({ children }) {
 							className: "min-w-0 flex-1",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 								className: "kicker",
-								children: "DSLV-ZPDI"
+								children: "DSLV-ZPDI · Rev 3.6"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "truncate text-sm font-semibold",
-								children: "Probing the Vacuum Structure"
+								className: "truncate text-base font-semibold",
+								children: "Upper bounds on carrier phase"
 							})]
 						}),
 						campaigns.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", {
@@ -1098,15 +1192,15 @@ function Shell({ children }) {
 				children
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
-				className: "shell-nav fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur-sm",
+				className: "shell-nav fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
-					className: "mx-auto grid max-w-3xl grid-cols-5",
+					className: "mx-auto grid max-w-3xl grid-cols-5 gap-1 px-2 py-1",
 					children: NAV.map((item) => {
 						const on = item.to === "/" ? path === "/" : path.startsWith(item.to);
 						const Icon = item.icon;
 						return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
 							to: item.to,
-							className: `flex min-h-14 flex-col items-center justify-center gap-1 text-xs ${on ? "text-primary" : "text-muted"}`,
+							className: `nav-hit ${on ? "nav-hit-on" : ""}`,
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, {
 								size: 18,
 								"aria-hidden": true
@@ -1196,4 +1290,4 @@ function NeedCampaign() {
 	});
 }
 //#endregion
-export { num as A, useBook as B, haversineM as C, lightTimeS as D, lEff as E, rowRad as F, rss as I, sci as L, paperIdentityChecks as M, phaseToPathM as N, morphology as O, preregComplete as P, sigmaPhiRad as R, formatSeconds as S, ionoPhaseRad as T, weakPhase as V, clockIsolation as _, Field as a, formatBaseline as b, Plate as c, SWITCHES as d, Shell as f, chromatic as g, betaNull as h, F_RATIO as i, nyquistHz as j, nodesReady as k, Readout as l, baselineForLags as m, F_L1_HZ as n, NeedCampaign as o, Tag as p, F_L5_HZ as r, PREREG as s, ART as t, STEPS as u, clockReady as v, identityPassCount as w, formatRad as x, dumpPhaseSigma as y, useActive as z };
+export { lightTimeS as A, rowRad as B, formatBaseline as C, identityPassCount as D, haversineM as E, paperIdentityChecks as F, useBook as G, sci as H, phaseToPathM as I, weakPhase as K, preregComplete as L, nodesReady as M, num as N, ionoPhaseRad as O, nyquistHz as P, registryAnchored as R, dumpPhaseSigma as S, formatSeconds as T, sigmaPhiRad as U, rss as V, useActive as W, chromatic as _, Field as a, detectionReady as b, Plate as c, SWITCHES as d, Shell as f, chainCBoundRad as g, betaNull as h, F_RATIO as i, morphology as j, lEff as k, Readout as l, baselineForLags as m, F_L1_HZ as n, NeedCampaign as o, Tag as p, F_L5_HZ as r, PREREG as s, ART as t, STEPS as u, clockIsolation as v, formatRad as w, doubleDifferenceFloor as x, clockReady as y, registryExported as z };

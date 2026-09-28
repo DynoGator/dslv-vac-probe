@@ -1,7 +1,7 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { J as require_react, S as require_jsx_runtime, b as Link } from "../_libs/@tanstack/react-router+[...].mjs";
-import { A as num, B as useBook, P as preregComplete, R as sigmaPhiRad, a as Field, c as Plate, f as Shell, k as nodesReady, n as F_L1_HZ, p as Tag, t as ART, u as STEPS, v as clockReady, w as identityPassCount, x as formatRad, z as useActive } from "./chrome-C6pvSZO-.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-hdEZOKy2.js
+import { D as identityPassCount, G as useBook, L as preregComplete, M as nodesReady, N as num, R as registryAnchored, U as sigmaPhiRad, W as useActive, a as Field, b as detectionReady, c as Plate, f as Shell, n as F_L1_HZ, p as Tag, t as ART, u as STEPS, w as formatRad, y as clockReady } from "./chrome--h4omt2u.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-B2tbHVaz.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function Deck() {
@@ -33,15 +33,15 @@ function DeckBody() {
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 								className: "kicker",
-								children: "Rev 3.4 · Resonant Genesis LLC"
+								children: "Rev 3.6 · Resonant Genesis LLC"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
 								className: "mt-1 text-2xl font-semibold",
-								children: "Probing the Vacuum Structure"
+								children: "Upper bounds on carrier-phase coherence"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 								className: "mt-1 max-w-prose text-sm text-accent",
-								children: "Carrier-phase coherence after the null is subtracted. Two chains. Two bounds. A null is the expected result."
+								children: "The vacuum-structure question motivates DSLV-ZPDI. The paper reports two upper bounds. A null is the expected result."
 							})
 						]
 					})
@@ -59,7 +59,7 @@ function DeckBody() {
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 							className: "mt-1 text-sm text-muted",
-							children: "Between-satellite single difference. Blind to isotropic site phase. Bounds direction-dependent residual coherence."
+							children: "Between-node double difference of between-satellite single differences. Blind to isotropic site phase. The shared IGS clock residual cancels. A null here does not constrain H_C."
 						})
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
@@ -71,11 +71,11 @@ function DeckBody() {
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
 							className: "mt-2 font-semibold",
-							children: "Isotropic common phase"
+							children: "Correlated site-common differential"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 							className: "mt-1 text-sm text-muted",
-							children: "Same-satellite inter-node difference. Keeps receiver-common phase. Bound set by the measured common-clock floor, or not quoted."
+							children: "Same-satellite inter-node difference. A phase identical at every antenna cancels and is unobservable. The bound is the per-baseline maximum, or it is not quoted."
 						})
 					]
 				})]
@@ -164,8 +164,8 @@ function DeckBody() {
 								]
 							})
 						] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-							tone: campaign.frozen ? "ok" : "warn",
-							children: campaign.frozen ? "Locked" : "Unlocked"
+							tone: registryAnchored(campaign) ? "ok" : campaign.frozen ? "warn" : "steel",
+							children: registryAnchored(campaign) ? "Anchored" : campaign.frozen ? "Draft freeze" : "Unlocked"
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("dl", {
@@ -210,7 +210,7 @@ function DeckBody() {
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 						className: "text-sm text-muted",
 						children: [
-							nodesReady(campaign) ? "Array roster meets the two-node bar." : "Roster still needs two identified nodes with measured σ_y and f_loop.",
+							nodesReady(campaign) ? detectionReady(campaign) ? "Four nodes. Detection-grade disjoint pairs are possible." : "Roster meets the Phase 0 pair. Detection-grade Analysis A still needs four nodes." : "Roster still needs two identified nodes with measured σ_y and f_loop.",
 							" ",
 							"Walk is on ",
 							step?.section,
@@ -224,9 +224,9 @@ function DeckBody() {
 						className: "btn btn-primary w-full",
 						children: "Continue the walk"
 					}),
-					campaign.frozen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					campaign.frozen ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 						className: "break-all font-mono text-xs text-muted",
-						children: campaign.frozen.sha256
+						children: [campaign.frozen.sha256, campaign.frozen.anchorId.trim() ? ` · ${campaign.frozen.anchorKind} ${campaign.frozen.anchorId}` : " · no external anchor"]
 					}) : null,
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
 						className: "space-y-1 text-sm",
@@ -275,7 +275,7 @@ function DeckBody() {
 					children: "Formula identity"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 					className: "mt-1 text-sm text-muted",
-					children: "Closed forms checked against the numbers quoted in Rev 3.4. A miss here is an app bug, not a measurement."
+					children: "Closed forms checked against the numbers quoted in Rev 3.6. A miss here is an app bug, not a measurement."
 				})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 					className: "tabular font-mono text-2xl text-primary",
 					children: [
@@ -288,7 +288,41 @@ function DeckBody() {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plate, {
 				src: ART.companion,
 				alt: "An RF rack in front of a closed glass door, companion studies kept out of the array.",
-				caption: "Appendix B stays behind the glass. It does not gate Chain S or Chain C."
+				caption: "Supplements S1 and S2 are withheld from the Rev 3.6 submission. They do not gate a chain."
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				className: "card space-y-2 p-4 text-sm",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "kicker",
+						children: "Rev 3.6 submission"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "mt-2 flex flex-col gap-2",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+							className: "hit-link",
+							href: "/rev-3.6-submission.pdf",
+							children: "Mission, white paper, and field-book guide"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+							className: "hit-link",
+							href: "/DSLV-ZPDI-Probing-The-Vacuum-Structure-GUIDE.md",
+							children: "Install guide, markdown"
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+						className: "text-muted",
+						children: [
+							"Production origin",
+							" ",
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+								className: "hit-link",
+								href: "https://dslv-vac-probe.grok.me",
+								children: "dslv-vac-probe.grok.me"
+							}),
+							". A preview is a different book."
+						]
+					})
+				]
 			})
 		]
 	});

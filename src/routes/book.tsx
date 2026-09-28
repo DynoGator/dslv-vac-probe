@@ -126,21 +126,41 @@ function BookBody() {
           </section>
 
           <section className="card space-y-3 p-4">
-            <h2 className="font-semibold">Field note</h2>
-            <Field label="Append only">
+            <h2 className="font-semibold">Housekeeping covariate</h2>
+            <p className="text-sm text-muted">
+              Optional E-field, barometer, or radon note. Logged beside the campaign. Not an estimator input, and not part of the detection statistic.
+            </p>
+            <Field label="What was observed, if you choose to record it">
               <textarea className="field textarea" value={note} onChange={(e) => setNote(e.target.value)} />
             </Field>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              disabled={!note.trim()}
-              onClick={() => {
-                addLog(c.id, { kind: "note", title: "Field note", body: note.trim() });
-                setNote("");
-              }}
-            >
-              Append note
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={!note.trim()}
+                onClick={() => {
+                  addLog(c.id, {
+                    kind: "covariate",
+                    title: "Covariate — not an estimator input",
+                    body: note.trim(),
+                  });
+                  setNote("");
+                }}
+              >
+                Append covariate
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={!note.trim()}
+                onClick={() => {
+                  addLog(c.id, { kind: "note", title: "Field note", body: note.trim() });
+                  setNote("");
+                }}
+              >
+                Append note
+              </button>
+            </div>
           </section>
 
           <section className="space-y-2">
