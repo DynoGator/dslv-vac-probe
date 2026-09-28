@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "DSLV-ZPDI-Probing-The-Vacuum-Structure",
+      "hasCanvas": false,
+      "bodyTextLen": 1373,
+      "bodyTextHash": "b1bb97b8039a0d2ad49ce6ce1d7f611f2de2ee2cdc78479c6f5ef4df694155f3",
+      "bodyTextPrefix": "DSLV-ZPDI Probing the Vacuum Structure REV 3.4 · RESONANT GENESI",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "DSLV-ZPDI-Probing-The-Vacuum-Structure",
+      "hasCanvas": false,
+      "bodyTextLen": 1373,
+      "bodyTextHash": "b1bb97b8039a0d2ad49ce6ce1d7f611f2de2ee2cdc78479c6f5ef4df694155f3",
+      "bodyTextPrefix": "DSLV-ZPDI Probing the Vacuum Structure REV 3.4 · RESONANT GENESI",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
